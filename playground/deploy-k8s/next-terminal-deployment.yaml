@@ -42,7 +42,7 @@ spec:
               value: "3306"
             - name: MYSQL_USERNAME
               value: next-terminal
-          image: dushixiang/next-terminal:latest
+          image: fightroad/next-terminal:latest
           name: next-terminal
           ports:
             - containerPort: 8088

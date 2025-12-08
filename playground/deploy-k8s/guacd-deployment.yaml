@@ -25,7 +25,7 @@ spec:
         io.kompose.service: guacd
     spec:
       containers:
-        - image: dushixiang/guacd:latest
+        - image: fightroad/guacd:latest
           name: guacd
           resources: {}
           volumeMounts:

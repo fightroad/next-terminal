@@ -8,11 +8,29 @@ jobs:
     name: next-terminal release
     runs-on: ubuntu-latest
     steps:
-      - name: Get version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Private Actions Checkout
         uses: actions/checkout@v3
+      - name: Get version
+        id: get_version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            # 从 tag 中提取版本（去掉 refs/tags/ 前缀，保留 v 前缀）
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            # 从代码中读取版本号
+            if [ -f "server/branding/branding.go" ]; then
+              # 从 branding.go 提取版本，已经包含 v 前缀
+              VERSION=$(grep 'var Version' server/branding/branding.go | sed "s/.*\`\\(v.*\\)\`.*/\\1/")
+            elif [ -f "web/package.json" ]; then
+              # 从 package.json 提取版本，需要添加 v 前缀
+              VER=$(grep '"version"' web/package.json | head -1 | sed 's/.*"version": "\(.*\)".*/\1/')
+              VERSION="v$VER"
+            else
+              VERSION="vdev"
+            fi
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
       - name: node Setup
         uses: actions/setup-node@v2
         with:
@@ -38,6 +56,7 @@ jobs:
       - name: release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
           files: next-terminal.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
