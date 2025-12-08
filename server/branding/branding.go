@@ -6,7 +6,7 @@ import (
 )
 
 var Name = "Next Terminal"
-var Copyright = fmt.Sprintf("Copyright © 2020-%d dushixiang, All Rights Reserved.", time.Now().Year())
+var Copyright = fmt.Sprintf("Copyright © 2020-%d fightroad, All Rights Reserved.", time.Now().Year())
 var Banner = `    ___       ___   
    /\__\     /\  \  
   /:| _|_    \:\  \ 

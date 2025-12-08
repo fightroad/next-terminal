@@ -99,6 +99,10 @@ const AssetModal = function ({
                 setUseSSL(asset['use-ssl']);
                 setEnableDrive(asset['enable-drive']);
                 setSocksProxyEnable(asset['socks-proxy-enable']);
+                // 如果已启用驱动器映射，需要加载存储空间列表以便显示名称
+                if (asset['enable-drive'] === true) {
+                    getStorages();
+                }
                 form.setFieldsValue(asset);
             }
         }

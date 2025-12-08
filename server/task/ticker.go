@@ -2,21 +2,26 @@ package task
 
 import (
 	"context"
-	"github.com/shirou/gopsutil/v3/load"
+	"next-terminal/server/common"
 	"next-terminal/server/common/nt"
+	"next-terminal/server/global/session"
 	"next-terminal/server/service"
 	"next-terminal/server/utils"
 	"strconv"
 	"time"
 
+	"github.com/shirou/gopsutil/v3/load"
+
 	"next-terminal/server/log"
+	"next-terminal/server/model"
 	"next-terminal/server/repository"
+
+	"next-terminal/server/global/stat"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/net"
-	"next-terminal/server/global/stat"
 )
 
 type Ticker struct {
@@ -28,11 +33,12 @@ func NewTicker() *Ticker {
 
 func (t *Ticker) SetupTicker() {
 
-	// 每隔一小时删除一次未使用的会话信息
+	// 每隔一小时删除一次未使用的会话信息，并修复僵尸会话
 	unUsedSessionTicker := time.NewTicker(time.Minute * 60)
 	go func() {
 		for range unUsedSessionTicker.C {
 			t.deleteUnUsedSession()
+			t.fixZombieSessions()
 		}
 	}()
 
@@ -208,6 +214,42 @@ func (t *Ticker) deleteUnUsedSession() {
 				_ = repository.SessionRepository.DeleteById(context.TODO(), sessions[i].ID)
 			}
 		}
+	}
+}
+
+// fixZombieSessions 修复僵尸会话：状态为connected但实际已断开的会话
+func (t *Ticker) fixZombieSessions() {
+	sessions, err := repository.SessionRepository.FindByStatus(context.TODO(), nt.Connected)
+	if err != nil {
+		log.Error("查询已连接会话列表失败", log.NamedError("err", err))
+		return
+	}
+
+	if len(sessions) == 0 {
+		return
+	}
+
+	zombieCount := 0
+	for i := range sessions {
+		sessionId := sessions[i].ID
+		// 检查会话是否在内存中存在，不存在则更新数据库状态为断开
+		if session.GlobalSessionManager.GetById(sessionId) == nil {
+			s := model.Session{
+				Status:           nt.Disconnected,
+				DisconnectedTime: common.NowJsonTime(),
+				Code:             -1,
+				Message:          "检测到僵尸会话，已自动断开",
+			}
+			if err := repository.SessionRepository.UpdateById(context.TODO(), &s, sessionId); err != nil {
+				log.Error("更新僵尸会话状态失败", log.String("sessionId", sessionId), log.NamedError("err", err))
+				continue
+			}
+			zombieCount++
+		}
+	}
+
+	if zombieCount > 0 {
+		log.Info("修复僵尸会话完成", log.Int("数量", zombieCount))
 	}
 }
 
