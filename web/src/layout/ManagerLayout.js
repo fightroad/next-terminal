@@ -1,6 +1,6 @@
 import React, {Suspense, useEffect, useState} from 'react';
 import {Breadcrumb, Dropdown, Layout, Menu, Popconfirm} from "antd";
-import {BugTwoTone, DesktopOutlined, DownOutlined, LogoutOutlined} from "@ant-design/icons";
+import {DesktopOutlined, DownOutlined, LogoutOutlined} from "@ant-design/icons";
 import {Link, Outlet, useLocation, useNavigate} from "react-router-dom";
 import {getCurrentUser} from "../service/permission";
 import LogoWithName from "../images/logo-with-name.png";
@@ -112,10 +112,6 @@ const ManagerLayout = () => {
         <Menu>
             <Menu.Item>
                 <Link to={'/my-asset'}><DesktopOutlined/> 我的资产</Link>
-            </Menu.Item>
-            <Menu.Item>
-                <Link to={'/debug/pprof'}><BugTwoTone/> DEBUG</Link>
-                <a target='_blank' href={`/debug/pprof/`}></a>
             </Menu.Item>
             <Menu.Item>
                 <Popconfirm
