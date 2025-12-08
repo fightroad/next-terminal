@@ -2,9 +2,6 @@ name: next-terminal Release
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "v*"
 
 jobs:
   next-terminal_Release:
