@@ -52,7 +52,10 @@ const ManagerLayout = () => {
     let _current = location.pathname.split('/')[1];
 
     let [current, setCurrent] = useState(_current);
-    let [openKeys, setOpenKeys] = useState(JSON.parse(sessionStorage.getItem('openKeys')));
+    let [openKeys, setOpenKeys] = useState(() => {
+        const saved = sessionStorage.getItem('openKeys');
+        return saved ? JSON.parse(saved) : [];
+    });
 
     useEffect(() => {
         setCurrent(_current);
@@ -85,9 +88,11 @@ const ManagerLayout = () => {
         </Breadcrumb.Item>,
     ].concat(extraBreadcrumbItems);
 
-    const subMenuChange = (openKeys) => {
-        setOpenKeys(openKeys);
-        sessionStorage.setItem('openKeys', JSON.stringify(openKeys));
+    const subMenuChange = (keys) => {
+        // 手风琴模式：只保留最新打开的菜单项（最后一个）
+        const newOpenKeys = keys.length > 0 ? [keys[keys.length - 1]] : [];
+        setOpenKeys(newOpenKeys);
+        sessionStorage.setItem('openKeys', JSON.stringify(newOpenKeys));
     }
 
     const menu = (
@@ -155,10 +160,9 @@ const ManagerLayout = () => {
                     }}
                     selectedKeys={[current]}
                     onOpenChange={subMenuChange}
-                    defaultOpenKeys={openKeys}
+                    openKeys={openKeys}
                     theme="dark"
                     mode="inline"
-                    defaultSelectedKeys={['']}
                     items={menuItems}
                 >
                 </Menu>
