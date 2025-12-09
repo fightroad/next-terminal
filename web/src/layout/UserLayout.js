@@ -93,26 +93,47 @@ const UserLayout = () => {
                             <img src={LogoWithName} alt='logo' width={120}/>
                         </Link>
 
-                        <Link to={'/my-asset'}>
-                            <Button type="text" style={{color: 'white'}}
-                                    icon={<DesktopOutlined/>}>
+                        <Link to={'/my-asset'} className={`km-nav-link ${_current === 'my-asset' ? 'active' : ''}`}>
+                            <Button type="text" className="km-nav-button" icon={<DesktopOutlined/>}>
                                 我的资产
                             </Button>
                         </Link>
 
-                        <Link to={'/my-command'}>
-                            <Button type="text" style={{color: 'white'}}
-                                    icon={<CodeOutlined/>}>
+                        <Link to={'/my-command'} className={`km-nav-link ${_current === 'my-command' ? 'active' : ''}`}>
+                            <Button type="text" className="km-nav-button" icon={<CodeOutlined/>}>
                                 我的指令
                             </Button>
                         </Link>
 
-                        <Link to={'/my-info'}>
-                            <Button type="text" style={{color: 'white'}}
-                                    icon={<UserOutlined/>}>
+                        <Link to={'/my-info'} className={`km-nav-link ${_current === 'my-info' ? 'active' : ''}`}>
+                            <Button type="text" className="km-nav-button" icon={<UserOutlined/>}>
                                 个人中心
                             </Button>
                         </Link>
+
+                        <div className="km-nav-link">
+                            <Button 
+                                type="text" 
+                                className="km-nav-button" 
+                                icon={<LogoutOutlined/>}
+                                onClick={() => {
+                                    Modal.confirm({
+                                        title: '您确定要退出登录吗?',
+                                        okText: '确定',
+                                        cancelText: '取消',
+                                        centered: true,
+                                        transitionName: '',
+                                        maskTransitionName: '',
+                                        onOk: async () => {
+                                            await accountApi.logout();
+                                            navigate('/login');
+                                        }
+                                    });
+                                }}
+                            >
+                                退出系统
+                            </Button>
+                        </div>
 
                     </div>
                     <div className='km-header-right'>

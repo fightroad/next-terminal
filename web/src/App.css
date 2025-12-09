@@ -149,6 +149,29 @@
     /*padding: 0 16px;*/
 }
 
+.km-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 8px;
+}
+
+.km-nav-link .km-nav-button {
+    color: white;
+}
+
+.km-nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    bottom: 4px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+}
+
 .km-header-right {
     text-align: left;
     height: 100%;
