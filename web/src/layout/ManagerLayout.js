@@ -1,5 +1,5 @@
 import React, {Suspense, useEffect, useState} from 'react';
-import {Breadcrumb, Dropdown, Layout, Menu, Popconfirm} from "antd";
+import {Breadcrumb, Dropdown, Layout, Menu, Modal} from "antd";
 import {DesktopOutlined, DownOutlined, LogoutOutlined} from "@ant-design/icons";
 import {Link, Outlet, useLocation, useNavigate} from "react-router-dom";
 import {getCurrentUser} from "../service/permission";
@@ -48,6 +48,7 @@ const ManagerLayout = () => {
         }
         return router;
     });
+    const menuItems = [...menus, {key: 'logout', icon: <LogoutOutlined/>, label: '退出系统'}];
 
     let [collapsed, setCollapsed] = useState(false);
 
@@ -113,20 +114,22 @@ const ManagerLayout = () => {
             <Menu.Item>
                 <Link to={'/my-asset'}><DesktopOutlined/> 我的资产</Link>
             </Menu.Item>
-            <Menu.Item>
-                <Popconfirm
-                    key='login-btn-pop'
-                    title="您确定要退出登录吗?"
-                    onConfirm={async () => {
-                        await accountApi.logout();
-                        navigate('/login');
-                    }}
-                    okText="确定"
-                    cancelText="取消"
-                    placement="left"
-                >
-                    <LogoutOutlined/> 退出登录
-                </Popconfirm>
+            <Menu.Item
+                key="logout"
+                onClick={() => {
+                    Modal.confirm({
+                        title: '您确定要退出登录吗?',
+                        okText: '确定',
+                        cancelText: '取消',
+                        centered: true,
+                        onOk: async () => {
+                            await accountApi.logout();
+                            navigate('/login');
+                        }
+                    });
+                }}
+            >
+                <LogoutOutlined/> 退出登录
             </Menu.Item>
         </Menu>
     );
@@ -152,6 +155,19 @@ const ManagerLayout = () => {
 
                 <Menu
                     onClick={(e) => {
+                        if (e.key === 'logout') {
+                            Modal.confirm({
+                                title: '您确定要退出登录吗?',
+                                okText: '确定',
+                                cancelText: '取消',
+                                centered: true,
+                                onOk: async () => {
+                                    await accountApi.logout();
+                                    navigate('/login');
+                                }
+                            });
+                            return;
+                        }
                         navigate(e.key);
                         setCurrent(e.key);
                     }}
@@ -161,7 +177,7 @@ const ManagerLayout = () => {
                     theme="dark"
                     mode="inline"
                     defaultSelectedKeys={['']}
-                    items={menus}
+                    items={menuItems}
                 >
                 </Menu>
             </Sider>

@@ -1,6 +1,6 @@
 import React, {Suspense, useEffect} from 'react';
 import {Link, Outlet, useLocation, useNavigate} from "react-router-dom";
-import {Breadcrumb, Button, Dropdown, Layout, Menu, Popconfirm} from "antd";
+import {Breadcrumb, Button, Dropdown, Layout, Menu, Modal} from "antd";
 import {
     CodeOutlined,
     DashboardOutlined,
@@ -61,20 +61,22 @@ const UserLayout = () => {
                 </Menu.Item>
             }
 
-            <Menu.Item>
-                <Popconfirm
-                    key='login-btn-pop'
-                    title="您确定要退出登录吗?"
-                    onConfirm={async ()=>{
-                        await accountApi.logout();
-                        navigate('/login');
-                    }}
-                    okText="确定"
-                    cancelText="取消"
-                    placement="left"
-                >
-                    <LogoutOutlined/> 退出登录
-                </Popconfirm>
+            <Menu.Item
+                key="logout"
+                onClick={() => {
+                    Modal.confirm({
+                        title: '您确定要退出登录吗?',
+                        okText: '确定',
+                        cancelText: '取消',
+                        centered: true,
+                        onOk: async () => {
+                            await accountApi.logout();
+                            navigate('/login');
+                        }
+                    });
+                }}
+            >
+                <LogoutOutlined/> 退出登录
             </Menu.Item>
 
         </Menu>
