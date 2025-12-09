@@ -89,7 +89,7 @@ const LoginForm = () => {
     };
 
     return (
-        <div style={{width: '100vw', height: '100vh', backgroundColor: '#fafafa'}}>
+        <div className="login-page">
             <Card className='login-card' title={null}>
                 <div style={{textAlign: "center", margin: '15px auto 30px auto', color: '#1890ff'}}>
                     <Title level={1}>{branding['name']}</Title>
