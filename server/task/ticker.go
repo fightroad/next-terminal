@@ -245,6 +245,7 @@ func (t *Ticker) fixZombieSessions() {
 				continue
 			}
 			zombieCount++
+			log.Debug("检测到僵尸会话，已标记断开", log.String("sessionId", sessionId))
 		}
 	}
 

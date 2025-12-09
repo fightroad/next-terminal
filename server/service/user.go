@@ -134,6 +134,9 @@ func (service userService) LogoutByToken(token string) (err error) {
 
 	if len(loginLogs) == 0 {
 		err = repository.UserRepository.UpdateOnlineByUsername(context.TODO(), loginLog.Username, false)
+		if err == nil {
+			log.Debug("Token过期，自动将用户下线", log.String("username", loginLog.Username))
+		}
 	}
 	return err
 }
