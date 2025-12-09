@@ -122,6 +122,8 @@ const ManagerLayout = () => {
                         okText: '确定',
                         cancelText: '取消',
                         centered: true,
+                        transitionName: '',
+                        maskTransitionName: '',
                         onOk: async () => {
                             await accountApi.logout();
                             navigate('/login');
@@ -161,6 +163,8 @@ const ManagerLayout = () => {
                                 okText: '确定',
                                 cancelText: '取消',
                                 centered: true,
+                                transitionName: '',
+                                maskTransitionName: '',
                                 onOk: async () => {
                                     await accountApi.logout();
                                     navigate('/login');
