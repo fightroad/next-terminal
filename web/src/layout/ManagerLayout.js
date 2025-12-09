@@ -4,7 +4,6 @@ import {DesktopOutlined, DownOutlined, LogoutOutlined} from "@ant-design/icons";
 import {Link, Outlet, useLocation, useNavigate} from "react-router-dom";
 import {getCurrentUser} from "../service/permission";
 import LogoWithName from "../images/logo-with-name.png";
-import Logo from "../images/logo.png";
 import FooterComponent from "./FooterComponent";
 import accountApi from "../api/account";
 import {routers} from "./router";
@@ -50,14 +49,9 @@ const ManagerLayout = () => {
     });
     const menuItems = [...menus, {key: 'logout', icon: <LogoutOutlined/>, label: '退出系统'}];
 
-    let [collapsed, setCollapsed] = useState(false);
-
     let _current = location.pathname.split('/')[1];
 
-
     let [current, setCurrent] = useState(_current);
-    let [logo, setLogo] = useState(LogoWithName);
-    let [logoWidth, setLogoWidth] = useState(140);
     let [openKeys, setOpenKeys] = useState(JSON.parse(sessionStorage.getItem('openKeys')));
 
     useEffect(() => {
@@ -90,19 +84,6 @@ const ManagerLayout = () => {
             <Link to="/">首页</Link>
         </Breadcrumb.Item>,
     ].concat(extraBreadcrumbItems);
-
-    const onCollapse = () => {
-        let _collapsed = !collapsed;
-        if (_collapsed) {
-            setLogo(Logo);
-            setLogoWidth(46);
-            setCollapsed(_collapsed);
-        } else {
-            setLogo(LogoWithName);
-            setLogoWidth(140);
-            setCollapsed(false);
-        }
-    };
 
     const subMenuChange = (openKeys) => {
         setOpenKeys(openKeys);
@@ -139,9 +120,6 @@ const ManagerLayout = () => {
     return (
         <Layout className="layout" style={{minHeight: '100vh'}}>
             <Sider
-                collapsible
-                collapsed={collapsed}
-                onCollapse={onCollapse}
                 style={{
                     overflow: 'auto',
                     height: '100vh',
@@ -152,7 +130,7 @@ const ManagerLayout = () => {
                 }}
             >
                 <div className="logo">
-                    <img src={logo} alt='logo' width={logoWidth}/>
+                    <img src={LogoWithName} alt='logo' width={140}/>
                 </div>
 
                 <Menu
@@ -186,13 +164,11 @@ const ManagerLayout = () => {
                 </Menu>
             </Sider>
 
-            <Layout className="site-layout" style={{marginLeft: collapsed ? 80 : 200}}>
+            <Layout className="site-layout" style={{marginLeft: 200}}>
                 <Header style={{padding: 0, height: 60, zIndex: 20}}>
                     <div className='layout-header'>
                         <div className='layout-header-left'>
-                            <div>
-                                <Breadcrumb>{breadcrumbItems}</Breadcrumb>
-                            </div>
+                            <Breadcrumb>{breadcrumbItems}</Breadcrumb>
                         </div>
 
                         <div className='layout-header-right'>
