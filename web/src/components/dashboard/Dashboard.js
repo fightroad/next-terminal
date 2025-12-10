@@ -95,7 +95,7 @@ class Dashboard extends Component {
                 type: 'Kubernetes',
                 value: this.state.asset['kubernetes'],
             }
-        ];
+        ].filter(item => item.value > 0);
         const assetConfig = {
             width: 200,
             height: 200,
@@ -106,12 +106,10 @@ class Dashboard extends Component {
             radius: 1,
             innerRadius: 0.6,
             label: {
-                type: 'inner',
-                offset: '-50%',
-                content: '{value}',
+                type: 'outer',
+                content: '{name}: {value}',
                 style: {
-                    textAlign: 'center',
-                    fontSize: 14,
+                    fontSize: 12,
                 },
             },
             interactions: [{type: 'element-selected'}, {type: 'element-active'}],
