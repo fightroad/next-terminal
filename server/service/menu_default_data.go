@@ -15,7 +15,7 @@ var DefaultMenu = []*model.Menu{
 		model.NewPermission("GET", "/assets/paging"),
 		model.NewPermission("GET", "/tags"),
 	),
-	model.NewMenu("asset-access", "接入", "asset",
+	model.NewMenu("asset-access", "连接", "asset",
 		model.NewPermission("POST", "/sessions"),
 		model.NewPermission("GET", "/sessions/:id/tunnel"),
 		model.NewPermission("GET", "/sessions/:id/ssh"),
@@ -127,7 +127,7 @@ var DefaultMenu = []*model.Menu{
 		model.NewPermission("POST", "/commands/:id/change-owner"),
 	),
 
-	model.NewMenu("access-gateway", "接入网关", "resource",
+	model.NewMenu("access-gateway", "代理网关", "resource",
 		model.NewPermission("GET", "/access-gateways/paging"),
 	),
 	model.NewMenu("access-gateway-add", "增加", "access-gateway",

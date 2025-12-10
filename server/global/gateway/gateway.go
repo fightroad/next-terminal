@@ -13,9 +13,9 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// Gateway 接入网关
+// Gateway 代理网关
 type Gateway struct {
-	ID         string // 接入网关ID
+	ID         string // 代理网关ID
 	IP         string
 	Port       int
 	Username   string
@@ -37,7 +37,7 @@ func (g *Gateway) OpenSshTunnel(id, ip string, port int) (exposedIP string, expo
 		sshClient, err := term.NewSshClient(g.IP, g.Port, g.Username, g.Password, g.PrivateKey, g.Passphrase)
 		if err != nil {
 			g.Connected = false
-			g.Message = "接入网关不可用：" + err.Error()
+			g.Message = "代理网关不可用：" + err.Error()
 			return "", 0, errors.New(g.Message)
 		} else {
 			g.Connected = true

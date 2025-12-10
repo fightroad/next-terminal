@@ -51,7 +51,7 @@ const AccessGatewayModal = ({
 
     return (
         <Modal
-            title={id ? '更新接入网关' : '新建接入网关'}
+            title={id ? '更新代理网关' : '新建代理网关'}
             visible={visible}
             maskClosable={false}
             destroyOnClose={true}

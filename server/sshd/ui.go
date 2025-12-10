@@ -192,7 +192,7 @@ func (gui Gui) handleAccessAsset(sess ssh.Session, sessionId string) (err error)
 	if s.AccessGatewayId != "" && s.AccessGatewayId != "-" {
 		g, err := service.GatewayService.GetGatewayById(s.AccessGatewayId)
 		if err != nil {
-			return errors.New("获取接入网关失败：" + err.Error())
+			return errors.New("获取代理网关失败：" + err.Error())
 		}
 
 		defer g.CloseSshTunnel(s.ID)

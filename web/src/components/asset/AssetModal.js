@@ -197,7 +197,7 @@ const AssetModal = function ({
             <Input placeholder="资产名称"/>
         </Form.Item>
 
-        <Form.Item label="协议" name='protocol' rules={[{required: true, message: '请选择接入协议'}]}>
+        <Form.Item label="协议" name='protocol' rules={[{required: true, message: '请选择连接协议'}]}>
             <Radio.Group onChange={handleProtocolChange}>
                 <Radio value="rdp">RDP</Radio>
                 <Radio value="ssh">SSH</Radio>
@@ -311,11 +311,11 @@ const AssetModal = function ({
             </>
         }
 
-        <Form.Item label="接入网关" name='accessGatewayId' tooltip={'需要从接入网关才能访问的目标机器必选'}>
+        <Form.Item label="代理网关" name='accessGatewayId' tooltip={'需要从代理网关才能访问的目标机器必选'}>
             <Select onChange={() => null} allowClear={true}>
                 {accessGateways.map(item => {
                     return (
-                        <Option key={item.id} value={item.id} placeholder={'需要从接入网关才能访问的目标机器必选'}>
+                        <Option key={item.id} value={item.id} placeholder={'需要从代理网关才能访问的目标机器必选'}>
                             <Tooltip placement="topLeft" title={item.name}>
                                 {item.name}
                             </Tooltip>

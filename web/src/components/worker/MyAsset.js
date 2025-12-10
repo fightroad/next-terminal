@@ -129,7 +129,7 @@ const MyAsset = () => {
             },
         },
         {
-            title: '最后接入时间',
+            title: '最后连接时间',
             key: 'lastAccessTime',
             sorter: true,
             dataIndex: 'lastAccessTime',
@@ -167,7 +167,7 @@ const MyAsset = () => {
                         rel="noreferrer"
                         target='_blank'
                     >
-                        接入
+                        连接
                     </a>,
                 ]
             },

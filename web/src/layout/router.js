@@ -51,7 +51,7 @@ export const routers = [
             },
             {
                 key: 'access-gateway',
-                label: '接入网关',
+                label: '代理网关',
                 icon: <ApiOutlined/>,
             },
         ]

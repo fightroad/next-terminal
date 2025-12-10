@@ -162,7 +162,7 @@ const AccessGateway = () => {
                 defaultPageSize: 10,
             }}
             dateFormatter="string"
-            headerTitle="接入网关列表"
+            headerTitle="代理网关列表"
             toolBarRender={() => [
                 <Show menu={'access-gateway-add'}>
                     <Button key="button" type="primary" onClick={() => {

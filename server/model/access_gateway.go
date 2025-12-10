@@ -4,7 +4,7 @@ import (
 	"next-terminal/server/common"
 )
 
-// AccessGateway 接入网关
+// AccessGateway 代理网关
 type AccessGateway struct {
 	ID          string          `gorm:"primary_key,type:varchar(36)" json:"id"`
 	Name        string          `gorm:"type:varchar(500)" json:"name"`

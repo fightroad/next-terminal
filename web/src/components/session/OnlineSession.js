@@ -111,12 +111,12 @@ const OnlineSession = () => {
                 );
             },
         }, {
-            title: '接入时间',
+            title: '连接时间',
             dataIndex: 'connectedTime',
             key: 'connectedTime',
             hideInSearch: true,
         }, {
-            title: '接入时长',
+            title: '连接时长',
             dataIndex: 'connectedTimeDur',
             key: 'connectedTimeDur',
             render: (text, record) => {

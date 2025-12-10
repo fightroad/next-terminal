@@ -208,7 +208,7 @@ const Asset = () => {
             hideInSearch: true,
         },
         {
-            title: '最后接入时间',
+            title: '最后连接时间',
             key: 'lastAccessTime',
             sorter: true,
             dataIndex: 'lastAccessTime',
@@ -245,8 +245,9 @@ const Asset = () => {
                             key="access"
                             href={url}
                             target='_blank'
+                            rel="noreferrer"
                         >
-                            接入
+                            连接
                         </a>
                     </Show>,
                     <Show menu={'asset-edit'} key={'asset-edit'}>
@@ -297,6 +298,8 @@ const Asset = () => {
                                     break;
                                 case 'asset-authorised-user-group':
                                     navigate(`/asset/${record['id']}?activeKey=bind-user-group`);
+                                    break;
+                                default:
                                     break;
                             }
                         }}

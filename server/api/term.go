@@ -69,7 +69,7 @@ func (api WebTerminalApi) SshEndpoint(c echo.Context) error {
 	if s.AccessGatewayId != "" && s.AccessGatewayId != "-" {
 		g, err := service.GatewayService.GetGatewayById(s.AccessGatewayId)
 		if err != nil {
-			return WriteMessage(ws, dto.NewMessage(Closed, "获取接入网关失败："+err.Error()))
+			return WriteMessage(ws, dto.NewMessage(Closed, "获取代理网关失败："+err.Error()))
 		}
 
 		defer g.CloseSshTunnel(s.ID)

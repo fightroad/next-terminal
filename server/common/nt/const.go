@@ -42,9 +42,9 @@ const (
 	Connected    = "connected"    // 会话状态：已连接
 	Disconnected = "disconnected" // 会话状态：已断开连接
 
-	Guacd    = "guacd"    // 接入模式：guacd
-	Native   = "native"   // 接入模式：原生
-	Terminal = "terminal" // 接入模式：终端
+	Guacd    = "guacd"    // 连接模式：guacd
+	Native   = "native"   // 连接模式：原生
+	Terminal = "terminal" // 连接模式：终端
 
 	TypeUser  = "user"  // 普通用户
 	TypeAdmin = "admin" // 管理员

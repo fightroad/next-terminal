@@ -76,7 +76,7 @@ func Auth(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(c)
 		}
 
-		// 放行接入相关接口
+		// 放行连接相关接口
 		uri = strings.Split(uri, "?")[0]
 		for _, url := range allowUrls {
 			_, ok := url.Match(uri)

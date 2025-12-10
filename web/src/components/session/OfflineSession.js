@@ -1,11 +1,11 @@
 import React, {useState} from 'react';
-import {Button, Drawer, Layout, message, Modal, Popconfirm, Select, Table, Tag, Tooltip} from "antd";
+import {Button, Layout, message, Modal, Popconfirm, Select, Table, Tag, Tooltip} from "antd";
 import {ProTable} from "@ant-design/pro-components";
 import ColumnState, {useColumnState} from "../../hook/column-state";
 
 import {differTime} from "../../utils/utils";
 import {openTinyWin} from "../../utils/window";
-import {MODE_COLORS, PROTOCOL_COLORS} from "../../common/constants";
+import {PROTOCOL_COLORS} from "../../common/constants";
 import sessionApi from "../../api/session";
 import './OfflineSession.css'
 import Show from "../../dd/fi/show";
@@ -116,12 +116,12 @@ const OfflineSession = () => {
                 );
             },
         }, {
-            title: '接入时间',
+            title: '连接时间',
             dataIndex: 'connectedTime',
             key: 'connectedTime',
             hideInSearch: true,
         }, {
-            title: '接入时长',
+            title: '连接时长',
             dataIndex: 'connectedTimeDur',
             key: 'connectedTimeDur',
             render: (text, record) => {
@@ -136,9 +136,8 @@ const OfflineSession = () => {
             title: '操作',
             valueType: 'option',
             key: 'option',
-            render: (text, record, _, action) => {
+            render: (_text, record, _index, _action) => {
                 let disablePlayback = record['recording'] !== '1';
-                let disableCmdRecord = record['commandCount'] === 0;
                 return [
                     <Show menu={'offline-session-playback'} key={'offline-session-playback'}>
                         <Button

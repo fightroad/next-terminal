@@ -100,7 +100,7 @@ func (r ShellJob) executeShellByAssets(assets []model.Asset) {
 			var msg string
 			if err != nil {
 				if errors.Is(gorm.ErrRecordNotFound, err) {
-					msg = fmt.Sprintf("资产「%v」Shell执行失败，请检查资产所关联接入网关是否存在，耗时「%v」", asset.Name, elapsed)
+					msg = fmt.Sprintf("资产「%v」Shell执行失败，请检查资产所关联代理网关是否存在，耗时「%v」", asset.Name, elapsed)
 				} else {
 					msg = fmt.Sprintf("资产「%v」Shell执行失败，错误内容为：「%v」，耗时「%v」", asset.Name, err.Error(), elapsed)
 				}

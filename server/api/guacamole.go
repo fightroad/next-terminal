@@ -76,7 +76,7 @@ func (api GuacamoleApi) Guacamole(c echo.Context) error {
 	if s.AccessGatewayId != "" && s.AccessGatewayId != "-" {
 		g, err := service.GatewayService.GetGatewayById(s.AccessGatewayId)
 		if err != nil {
-			guacamole.Disconnect(ws, AccessGatewayUnAvailable, "获取接入网关失败："+err.Error())
+			guacamole.Disconnect(ws, AccessGatewayUnAvailable, "获取代理网关失败："+err.Error())
 			return nil
 		}
 
