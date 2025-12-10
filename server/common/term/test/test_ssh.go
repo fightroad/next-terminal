@@ -30,7 +30,8 @@ func main() {
 
 	client, err := ssh.Dial("tcp", "172.16.101.32:22", sshConfig)
 	if err != nil {
-		log.Error(err)
+		log.Error("SSH连接失败", log.NamedError("err", err))
+		return
 	}
 	defer client.Close()
 
@@ -54,6 +55,8 @@ func (t *SSHTerminal) updateTerminalSize() {
 			fmt.Println(err)
 		}
 
+		// 注意：signal.Notify 被注释掉了，此功能当前不可用
+		//nolint:staticcheck,gosimple // 测试代码：需要无限循环等待终端大小变化信号
 		for {
 			select {
 			// The client updated the size of the local PTY. This change needs to occur
@@ -62,21 +65,27 @@ func (t *SSHTerminal) updateTerminalSize() {
 				if sigwinch == nil {
 					return
 				}
-				currTermWidth, currTermHeight, err := terminal.GetSize(fd)
+				currTermWidth, currTermHeight, sizeErr := terminal.GetSize(fd)
+				if sizeErr != nil {
+					fmt.Println(sizeErr)
+					continue
+				}
 
 				// Terminal size has not changed, don't do anything.
 				if currTermHeight == termHeight && currTermWidth == termWidth {
 					continue
 				}
 
-				err = t.Session.WindowChange(currTermHeight, currTermWidth)
+				err := t.Session.WindowChange(currTermHeight, currTermWidth)
 				if err != nil {
-					fmt.Printf("Unable to send window-change reqest: %s.", err)
+					fmt.Printf("Unable to send window-change request: %s.", err)
 					continue
 				}
 
 				termWidth, termHeight = currTermWidth, currTermHeight
-
+			default:
+				// 避免阻塞，但此功能当前不可用（signal.Notify 被注释）
+				time.Sleep(100 * time.Millisecond)
 			}
 		}
 	}()
@@ -87,9 +96,9 @@ func (t *SSHTerminal) interactiveSession() error {
 
 	defer func() {
 		if t.exitMsg == "" {
-			log.Info(os.Stdout, "the connection was closed on the remote side on ", time.Now().Format(time.RFC822))
+			log.Info("远程连接已关闭", log.String("time", time.Now().Format(time.RFC822)))
 		} else {
-			log.Info(os.Stdout, t.exitMsg)
+			log.Info(t.exitMsg)
 		}
 	}()
 
@@ -126,6 +135,9 @@ func (t *SSHTerminal) interactiveSession() error {
 		return err
 	}
 	t.stderr, err = t.Session.StderrPipe()
+	if err != nil {
+		return err
+	}
 
 	go io.Copy(os.Stderr, t.stderr)
 	go io.Copy(os.Stdout, t.stdout)
