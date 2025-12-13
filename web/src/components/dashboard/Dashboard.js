@@ -145,7 +145,7 @@ class Dashboard extends Component {
         };
 
         return (<>
-            <div style={{margin: 16}}>
+            <div className="dashboard-container" style={{margin: 16}}>
                 <ProCard
                     title="数据概览"
                     // extra={dayjs().format("YYYY[年]MM[月]DD[日]") + ' 星期' + weekMapping[dayjs().day()]}

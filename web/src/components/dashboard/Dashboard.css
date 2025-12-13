@@ -1,3 +1,18 @@
+/* Dashboard 容器样式保护 */
+.dashboard-container .ant-pro-statistic-card {
+    font-size: 14px;
+}
+
+.dashboard-container .ant-pro-statistic-card .ant-statistic-title {
+    font-size: 14px;
+    line-height: 22px;
+}
+
+.dashboard-container .ant-pro-statistic-card .ant-statistic-content {
+    font-size: 24px;
+    line-height: 32px;
+}
+
 .pie-card .ant-pro-card-body {
     padding: 16px !important;
 }
