@@ -122,20 +122,35 @@ const AssetModal = function ({
         if (visible) {
             if (id) {
                 getItem();
+            } else {
+                // 新建模式：重置所有状态到默认值
+                const defaultProtocol = 'rdp';
+                const defaultAccountType = 'custom';
+                const defaultPort = 3389;
+                
+                setProtocol(defaultProtocol);
+                setAccountType(defaultAccountType);
+                setProtocolOptions(protocolMapping[defaultProtocol]);
+                setUseSSL(false);
+                setEnableDrive(false);
+                setSocksProxyEnable(false);
+                
+                form.setFieldsValue({
+                    'accountType': defaultAccountType,
+                    'protocol': defaultProtocol,
+                    'port': defaultPort,
+                    'enable-drive': false,
+                    'force-lossless': false,
+                    'socks-proxy-enable': false,
+                    'ignore-cert': false,
+                    'use-ssl': false,
+                });
             }
             getTags();
             getAccessGateways();
         } else {
-            form.setFieldsValue({
-                'accountType': accountType,
-                'protocol': protocol,
-                'port': 3389,
-                'enable-drive': false,
-                'force-lossless': false,
-                'socks-proxy-enable': false,
-                'ignore-cert': false,
-                'use-ssl': false,
-            });
+            // 关闭对话框时重置表单
+            form.resetFields();
         }
 
     }, [visible]);
