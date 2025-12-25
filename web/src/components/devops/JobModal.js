@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Form, Input, Modal, Radio, Select, Spin} from "antd";
 import jobApi from "../../api/job";
 import assetApi from "../../api/asset";
@@ -48,6 +48,29 @@ const JobModal = ({
             value: item.id
         }
     });
+
+    useEffect(() => {
+        if (visible) {
+            if (!id) {
+                // 新建模式：重置所有状态和表单到默认值
+                const defaultFunc = 'shell-job';
+                const defaultMode = 'all';
+                setFunc(defaultFunc);
+                setMode(defaultMode);
+                form.setFieldsValue({
+                    func: defaultFunc,
+                    mode: defaultMode,
+                });
+            }
+        } else {
+            // 关闭对话框时重置所有状态和表单到默认值
+            const defaultFunc = 'shell-job';
+            const defaultMode = 'all';
+            setFunc(defaultFunc);
+            setMode(defaultMode);
+            form.resetFields();
+        }
+    }, [visible]);
 
     const formItemLayout = {
         labelCol: {span: 6},

@@ -45,12 +45,18 @@ const CredentialModal = ({
         if (visible) {
             if (id) {
                 getItem();
-            }else {
+            } else {
+                // 新建模式：重置所有状态和表单到默认值
+                const defaultType = 'custom';
+                setType(defaultType);
                 form.setFieldsValue({
-                    type: 'custom',
+                    type: defaultType,
                 });
             }
         } else {
+            // 关闭对话框时重置所有状态和表单到默认值
+            const defaultType = 'custom';
+            setType(defaultType);
             form.resetFields();
         }
     }, [visible]);

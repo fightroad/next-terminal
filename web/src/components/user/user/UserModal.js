@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Form, Input, Modal, Radio, Select} from "antd";
 import userApi from "../../../api/user";
 import roleApi from "../../../api/role";
@@ -28,6 +28,24 @@ const UserModal = ({visible, handleOk, handleCancel, confirmLoading, id}) => {
             setUserType(data?.type);
         }
     });
+
+    useEffect(() => {
+        if (visible) {
+            if (!id) {
+                // 新建模式：重置所有状态和表单到默认值
+                const defaultUserType = 'user';
+                setUserType(defaultUserType);
+                form.setFieldsValue({
+                    type: defaultUserType,
+                });
+            }
+        } else {
+            // 关闭对话框时重置所有状态和表单到默认值
+            const defaultUserType = 'user';
+            setUserType(defaultUserType);
+            form.resetFields();
+        }
+    }, [visible]);
 
     return (
         <Modal

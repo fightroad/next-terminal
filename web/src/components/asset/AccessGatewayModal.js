@@ -38,13 +38,19 @@ const AccessGatewayModal = ({
         if (visible) {
             if(id){
                 getItem();
-            }else {
+            } else {
+                // 新建模式：重置所有状态和表单到默认值
+                const defaultAccountType = 'password';
+                setAccountType(defaultAccountType);
                 form.setFieldsValue({
-                    accountType: 'password',
+                    accountType: defaultAccountType,
                     port: 22,
                 });
             }
         } else {
+            // 关闭对话框时重置所有状态和表单到默认值
+            const defaultAccountType = 'password';
+            setAccountType(defaultAccountType);
             form.resetFields();
         }
     }, [visible]);
