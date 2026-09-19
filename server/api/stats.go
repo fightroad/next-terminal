@@ -73,6 +73,9 @@ type Stat struct {
 }
 
 func GetAllStats(nextSession *session.Session) (*Stat, error) {
+	if nextSession == nil || nextSession.NextTerminal == nil || nextSession.NextTerminal.SshClient == nil {
+		return nil, fmt.Errorf("SSH连接不可用")
+	}
 	client := nextSession.NextTerminal.SshClient
 	start := time.Now()
 

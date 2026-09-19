@@ -37,30 +37,42 @@ func NewNextTerminalUseSocks(ip string, port int, username, password, privateKey
 func newNT(sshClient *ssh.Client, pipe bool, recording string, term string, rows int, cols int) (*NextTerminal, error) {
 	sshSession, err := sshClient.NewSession()
 	if err != nil {
+		_ = sshClient.Close()
 		return nil, err
 	}
 
 	var stdoutReader *bufio.Reader
+	var stdinPipe io.WriteCloser
+	var recorder *Recorder
+	cleanup := func() {
+		if recorder != nil {
+			recorder.Close()
+		}
+		_ = sshSession.Close()
+		_ = sshClient.Close()
+	}
+
 	if pipe {
 		stdoutPipe, err := sshSession.StdoutPipe()
 		if err != nil {
+			cleanup()
 			return nil, err
 		}
 		stdoutReader = bufio.NewReader(stdoutPipe)
 	}
 
-	var stdinPipe io.WriteCloser
 	if pipe {
 		stdinPipe, err = sshSession.StdinPipe()
 		if err != nil {
+			cleanup()
 			return nil, err
 		}
 	}
 
-	var recorder *Recorder
 	if recording != "" {
 		recorder, err = NewRecorder(recording, term, rows, cols)
 		if err != nil {
+			cleanup()
 			return nil, err
 		}
 	}

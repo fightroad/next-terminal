@@ -182,6 +182,7 @@ func ExecCommandBySSH(cmd, ip string, port int, username, password, privateKey, 
 	if err != nil {
 		return "", err
 	}
+	defer sshClient.Close()
 
 	session, err := sshClient.NewSession()
 	if err != nil {

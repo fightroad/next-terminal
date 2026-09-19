@@ -116,6 +116,7 @@ func NewSshClientUseSocks(ip string, port int, username, password, privateKey, p
 
 	clientConn, channels, requests, err := ssh.NewClientConn(conn, addr, config)
 	if err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 

@@ -110,11 +110,13 @@ func (api WebTerminalApi) SshEndpoint(c echo.Context) error {
 	}
 
 	if err := nextTerminal.RequestPty(xterm, rows, cols); err != nil {
-		return err
+		nextTerminal.Close()
+		return WriteMessage(ws, dto.NewMessage(Closed, "请求终端失败："+err.Error()))
 	}
 
 	if err := nextTerminal.Shell(); err != nil {
-		return err
+		nextTerminal.Close()
+		return WriteMessage(ws, dto.NewMessage(Closed, "启动Shell失败："+err.Error()))
 	}
 
 	sessionForUpdate := model.Session{
@@ -130,10 +132,12 @@ func (api WebTerminalApi) SshEndpoint(c echo.Context) error {
 	}
 	// 创建新会话
 	if err := repository.SessionRepository.UpdateById(ctx, &sessionForUpdate, sessionId); err != nil {
+		nextTerminal.Close()
 		return err
 	}
 
 	if err := WriteMessage(ws, dto.NewMessage(Connected, "")); err != nil {
+		nextTerminal.Close()
 		return err
 	}
 

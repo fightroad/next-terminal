@@ -106,6 +106,7 @@ func NewRecorder(recordingPath, term string, h int, w int) (recorder *Recorder, 
 	}
 
 	if err := recorder.WriteHeader(header); err != nil {
+		_ = file.Close()
 		return nil, err
 	}
 

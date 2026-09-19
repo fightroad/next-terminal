@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 	"next-terminal/server/common"
 	"next-terminal/server/common/nt"
 	"next-terminal/server/global/session"
@@ -78,6 +79,9 @@ func systemLoad() error {
 	percent, err := cpu.Percent(time.Second, false)
 	if err != nil {
 		return err
+	}
+	if len(percent) == 0 {
+		return errors.New("采集 CPU 使用率失败")
 	}
 
 	afterBytesSent, afterBytesRecv, err := netCounter()

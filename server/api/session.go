@@ -258,7 +258,8 @@ func (api SessionApi) SessionUploadEndpoint(c echo.Context) error {
 		if _, err = io.Copy(dstFile, srcReader); err != nil {
 			return err
 		}
-		return Success(c, nil)
+		// 进度已通过 event-stream 写出，不能再写 JSON
+		return nil
 	} else if "rdp" == s.Protocol {
 		if err := service.StorageService.StorageUpload(c, file, s.StorageId); err != nil {
 			return err

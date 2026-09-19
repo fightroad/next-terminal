@@ -130,9 +130,10 @@ func (api GuacamoleApi) Guacamole(c echo.Context) error {
 	if configuration.Protocol == nt.SSH {
 		nextTerminal, err := CreateNextTerminalBySession(s)
 		if err != nil {
+			_ = guacdTunnel.Close()
 			guacamole.Disconnect(ws, NewSshClientError, "建立SSH客户端失败: "+err.Error())
 			log.Debug("建立 ssh 客户端失败", log.String("sessionId", sessionId), log.NamedError("err", err))
-			return err
+			return nil
 		}
 		nextSession.NextTerminal = nextTerminal
 	}
@@ -153,6 +154,7 @@ func (api GuacamoleApi) Guacamole(c echo.Context) error {
 	// 创建新会话
 	log.Debug("新建会话成功", log.String("sessionId", sessionId))
 	if err := repository.SessionRepository.UpdateById(ctx, &sess, sessionId); err != nil {
+		session.GlobalSessionManager.Del(sessionId)
 		return err
 	}
 
@@ -245,6 +247,7 @@ func (api GuacamoleApi) GuacamoleMonitor(c echo.Context) error {
 	// 要监控会话
 	forObsSession := session.GlobalSessionManager.GetById(sessionId)
 	if forObsSession == nil {
+		_ = guacdTunnel.Close()
 		guacamole.Disconnect(ws, NotFoundSession, "获取会话失败")
 		return nil
 	}

@@ -131,10 +131,16 @@ func (opt *Instruction) Parse(content string) Instruction {
 	}
 	messages := strings.Split(content, ",")
 
-	var args = make([]string, len(messages))
+	args := make([]string, 0, len(messages))
 	for i := range messages {
-		lm := strings.Split(messages[i], ".")
-		args[i] = lm[1]
+		lm := strings.SplitN(messages[i], ".", 2)
+		if len(lm) < 2 {
+			continue
+		}
+		args = append(args, lm[1])
+	}
+	if len(args) == 0 {
+		return Instruction{}
 	}
 	return NewInstruction(args[0], args[1:]...)
 }
