@@ -186,6 +186,9 @@ func (s loginPolicyService) checkWeekDay(policies []model.LoginPolicy) error {
 			times := strings.Split(period.Value, "、")
 			for _, t := range times {
 				timeRange := strings.Split(t, "~")
+				if len(timeRange) < 2 {
+					continue
+				}
 				start := timeRange[0]
 				end := timeRange[1]
 				if (start == "00:00" && end == "00:00") || (start <= hwc && hwc <= end) {

@@ -37,7 +37,7 @@ func NewTermHandler(userId, assetId, sessionId string, isRecording bool, ws *web
 		nextTerminal: nextTerminal,
 		ctx:          ctx,
 		cancel:       cancel,
-		dataChan:     make(chan rune),
+		dataChan:     make(chan rune, 4096),
 		tick:         tick,
 	}
 }
@@ -64,7 +64,11 @@ func (r *TermHandler) readFormTunnel() {
 				return
 			}
 			if size > 0 {
-				r.dataChan <- rn
+				select {
+				case <-r.ctx.Done():
+					return
+				case r.dataChan <- rn:
+				}
 			}
 		}
 	}
@@ -81,6 +85,7 @@ func (r *TermHandler) writeToWebsocket() {
 				continue
 			}
 			if err := r.SendMessageToWebSocket(dto.NewMessage(Data, s)); err != nil {
+				r.cancel()
 				return
 			}
 			// 录屏
@@ -121,8 +126,8 @@ func (r *TermHandler) SendMessageToWebSocket(msg dto.Message) error {
 	if r.webSocket == nil {
 		return nil
 	}
-	defer r.mutex.Unlock()
 	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	message := []byte(msg.ToString())
 	return r.webSocket.WriteMessage(websocket.TextMessage, message)
 }

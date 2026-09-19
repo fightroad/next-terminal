@@ -26,13 +26,14 @@ func (r *Tunnel) Open(sshClient *ssh.Client) {
 		if err != nil {
 			return
 		}
-		r.localConnections = append(r.localConnections, localConn)
 
 		remoteAddr := fmt.Sprintf("%s:%d", r.remoteHost, r.remotePort)
 		remoteConn, err := sshClient.Dial("tcp", remoteAddr)
 		if err != nil {
-			return
+			_ = localConn.Close()
+			continue
 		}
+		r.localConnections = append(r.localConnections, localConn)
 		r.remoteConnections = append(r.remoteConnections, remoteConn)
 
 		go copyConn(localConn, remoteConn)

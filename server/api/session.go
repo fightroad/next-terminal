@@ -217,6 +217,7 @@ func (api SessionApi) SessionUploadEndpoint(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	defer src.Close()
 
 	remoteDir := c.QueryParam("dir")
 	remoteFile := path.Join(remoteDir, filename)
@@ -231,7 +232,10 @@ func (api SessionApi) SessionUploadEndpoint(c echo.Context) error {
 			return errors.New("获取会话失败")
 		}
 
-		sftpClient := nextSession.NextTerminal.SftpClient
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
+		}
 		// 文件夹不存在时自动创建文件夹
 		if _, err := sftpClient.Stat(remoteDir); os.IsNotExist(err) {
 			if err := sftpClient.MkdirAll(remoteDir); err != nil {
@@ -262,7 +266,7 @@ func (api SessionApi) SessionUploadEndpoint(c echo.Context) error {
 		return Success(c, nil)
 	}
 
-	return err
+	return errors.New("当前协议不支持此操作")
 }
 
 func (api SessionApi) SessionEditEndpoint(c echo.Context) error {
@@ -283,7 +287,10 @@ func (api SessionApi) SessionEditEndpoint(c echo.Context) error {
 			return errors.New("获取会话失败")
 		}
 
-		sftpClient := nextSession.NextTerminal.SftpClient
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
+		}
 		dstFile, err := sftpClient.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
 		if err != nil {
 			return err
@@ -310,7 +317,7 @@ func (api SessionApi) SessionEditEndpoint(c echo.Context) error {
 		}
 		return Success(c, nil)
 	}
-	return err
+	return errors.New("当前协议不支持此操作")
 }
 
 func (api SessionApi) SessionDownloadEndpoint(c echo.Context) error {
@@ -336,7 +343,11 @@ func (api SessionApi) SessionDownloadEndpoint(c echo.Context) error {
 			return errors.New("获取会话失败")
 		}
 
-		dstFile, err := nextSession.NextTerminal.SftpClient.Open(file)
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
+		}
+		dstFile, err := sftpClient.Open(file)
 		if err != nil {
 			return err
 		}
@@ -355,7 +366,7 @@ func (api SessionApi) SessionDownloadEndpoint(c echo.Context) error {
 		return service.StorageService.StorageDownload(c, file, storageId)
 	}
 
-	return err
+	return errors.New("当前协议不支持此操作")
 }
 
 func (api SessionApi) SessionLsEndpoint(c echo.Context) error {
@@ -372,15 +383,12 @@ func (api SessionApi) SessionLsEndpoint(c echo.Context) error {
 			return errors.New("获取会话失败")
 		}
 
-		if nextSession.NextTerminal.SftpClient == nil {
-			sftpClient, err := sftp.NewClient(nextSession.NextTerminal.SshClient)
-			if err != nil {
-				return err
-			}
-			nextSession.NextTerminal.SftpClient = sftpClient
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
 		}
 
-		fileInfos, err := nextSession.NextTerminal.SftpClient.ReadDir(remoteDir)
+		fileInfos, err := sftpClient.ReadDir(remoteDir)
 		if err != nil {
 			return err
 		}
@@ -434,7 +442,11 @@ func (api SessionApi) SessionMkDirEndpoint(c echo.Context) error {
 		if nextSession == nil {
 			return errors.New("获取会话失败")
 		}
-		if err := nextSession.NextTerminal.SftpClient.Mkdir(remoteDir); err != nil {
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
+		}
+		if err := sftpClient.Mkdir(remoteDir); err != nil {
 			return err
 		}
 		return Success(c, nil)
@@ -470,7 +482,10 @@ func (api SessionApi) SessionRmEndpoint(c echo.Context) error {
 			return errors.New("获取会话失败")
 		}
 
-		sftpClient := nextSession.NextTerminal.SftpClient
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
+		}
 
 		stat, err := sftpClient.Stat(file)
 		if err != nil {
@@ -532,7 +547,10 @@ func (api SessionApi) SessionRenameEndpoint(c echo.Context) error {
 			return errors.New("获取会话失败")
 		}
 
-		sftpClient := nextSession.NextTerminal.SftpClient
+		sftpClient, err := getSessionSftpClient(nextSession)
+		if err != nil {
+			return err
+		}
 
 		if err := sftpClient.Rename(oldName, newName); err != nil {
 			return err
@@ -598,4 +616,22 @@ func (api SessionApi) SessionStatsEndpoint(c echo.Context) error {
 		return err
 	}
 	return Success(c, stats)
+}
+
+func getSessionSftpClient(nextSession *session.Session) (*sftp.Client, error) {
+	if nextSession == nil || nextSession.NextTerminal == nil {
+		return nil, errors.New("获取会话失败")
+	}
+	if nextSession.NextTerminal.SftpClient != nil {
+		return nextSession.NextTerminal.SftpClient, nil
+	}
+	if nextSession.NextTerminal.SshClient == nil {
+		return nil, errors.New("SSH连接不可用")
+	}
+	sftpClient, err := sftp.NewClient(nextSession.NextTerminal.SshClient)
+	if err != nil {
+		return nil, err
+	}
+	nextSession.NextTerminal.SftpClient = sftpClient
+	return sftpClient, nil
 }

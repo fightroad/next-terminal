@@ -129,11 +129,11 @@ const AssetUserGroup = ({id, active}) => {
                     setConfirmLoading(true);
                     values['assetId'] = id;
                     try {
-                        let success = authorisedApi.AuthorisedUserGroups(values);
+                        let success = await authorisedApi.AuthorisedUserGroups(values);
                         if (success) {
                             setVisible(false);
+                            actionRef.current.reload();
                         }
-                        actionRef.current.reload();
                     } finally {
                         setConfirmLoading(false);
                     }

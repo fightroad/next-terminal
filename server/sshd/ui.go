@@ -154,7 +154,7 @@ func (gui Gui) createSession(sess ssh.Session, assetId, creator string) (err err
 	if asset.AccountType == "credential" {
 		credential, err := repository.CredentialRepository.FindById(context.TODO(), asset.CredentialId)
 		if err != nil {
-			return nil
+			return err
 		}
 
 		if credential.Type == nt.Custom {

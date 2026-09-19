@@ -128,11 +128,11 @@ const AssetUser = ({active, id}) => {
                     setConfirmLoading(true);
                     values['assetId'] = id;
                     try {
-                        let success = authorisedApi.AuthorisedUsers(values);
+                        let success = await authorisedApi.AuthorisedUsers(values);
                         if (success) {
                             setVisible(false);
+                            actionRef.current.reload();
                         }
-                        actionRef.current.reload();
                     } finally {
                         setConfirmLoading(false);
                     }

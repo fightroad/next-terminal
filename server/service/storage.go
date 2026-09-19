@@ -195,6 +195,7 @@ func (service storageService) StorageUpload(c echo.Context, file *multipart.File
 	if err != nil {
 		return err
 	}
+	defer src.Close()
 
 	remoteDir := c.QueryParam("dir")
 	remoteFile := path.Join(remoteDir, filename)
