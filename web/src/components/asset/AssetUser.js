@@ -56,8 +56,10 @@ const AssetUser = ({active, id}) => {
                     <a
                         key="unbind"
                         onClick={async () => {
-                            await authorisedApi.DeleteById(record['id']);
-                            actionRef.current.reload();
+                            const success = await authorisedApi.DeleteById(record['id']);
+                            if (success) {
+                                actionRef.current.reload();
+                            }
                         }}
                     >
                         移除

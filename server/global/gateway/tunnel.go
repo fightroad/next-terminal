@@ -54,5 +54,8 @@ func (r *Tunnel) Close() {
 }
 
 func copyConn(writer, reader net.Conn) {
+	defer func() {
+		_ = writer.Close()
+	}()
 	_, _ = io.Copy(writer, reader)
 }

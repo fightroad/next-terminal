@@ -179,7 +179,10 @@ func (service storageService) DeleteStorageById(c context.Context, id string, fo
 
 func (service storageService) StorageUpload(c echo.Context, file *multipart.FileHeader, storageId string) error {
 	drivePath := service.GetBaseDrivePath()
-	storage, _ := repository.StorageRepository.FindById(context.TODO(), storageId)
+	storage, err := repository.StorageRepository.FindById(context.TODO(), storageId)
+	if err != nil {
+		return err
+	}
 	if storage.LimitSize > 0 {
 		dirSize, err := utils.DirSize(path.Join(drivePath, storageId))
 		if err != nil {
