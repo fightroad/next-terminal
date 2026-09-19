@@ -1,8 +1,10 @@
 # Next Terminal
 
+本仓库是 [Next Terminal](https://github.com/dushixiang/next-terminal) 1.x 开源版的分叉二次开发，当前版本 **1.4.11**。上游 1.x 已停止维护，本仓库在其基础上继续维护。协议仍为 AGPL-3.0。
+
 ## 快速了解
 
-Next Terminal是一个简单好用安全的开源交互审计系统，支持RDP、SSH、VNC、Telnet、Kubernetes协议。
+Next Terminal 是一个简单好用安全的开源交互审计系统，支持 RDP、SSH、VNC、Telnet、Kubernetes 协议。
 
 ## 主要功能
 
@@ -22,7 +24,9 @@ Next Terminal是一个简单好用安全的开源交互审计系统，支持RDP�
 
 ## 快速安装
 
-- [安装文档](https://next-terminal.typesafe.cn)
+- [安装文档](https://next-terminal.typesafe.cn)（上游 1.x 文档，步骤仍可参考）
+
+部署请用本仓库根目录的 `docker-compose.yml`，镜像是 `fightroad/next-terminal` 和 `fightroad/guacd`，不要用上游镜像。
 
 默认账号密码为 `admin/admin`。
 
