@@ -39,7 +39,7 @@ jobs:
         run: |
           cd web
           npm install --global yarn
-          yarn
+          yarn --ignore-engines
       - name: go Setup
         uses: actions/setup-go@v4
         with:

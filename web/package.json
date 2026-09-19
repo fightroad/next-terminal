@@ -46,5 +46,8 @@
     "not ie <= 11",
     "not op_mini all"
   ],
+  "resolutions": {
+    "@mapbox/jsonlint-lines-primitives": "2.0.2"
+  },
   "homepage": "."
 }

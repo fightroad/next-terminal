@@ -28,7 +28,7 @@ jobs:
         run: |
           cd web
           npm install --global yarn
-          yarn
+          yarn --ignore-engines
           yarn build
       - name: Docker Login
         uses: docker/login-action@v1.10.0
