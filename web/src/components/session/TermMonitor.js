@@ -75,11 +75,11 @@ const TermMonitor = () => {
                     break;
             }
         }
-        return [webSocket, fitAddon];
+        return [webSocket, fitAddon, term];
     }
 
     useEffect(() => {
-        let [webSocket, fitAddon] = init(sessionId);
+        let [webSocket, fitAddon, term] = init(sessionId);
         let resize = debounce(() => {
             onWindowResize(fitAddon);
         });
@@ -87,6 +87,9 @@ const TermMonitor = () => {
         return () => {
             if (webSocket) {
                 webSocket.close();
+            }
+            if (term) {
+                term.dispose();
             }
             window.removeEventListener('resize', resize);
         }

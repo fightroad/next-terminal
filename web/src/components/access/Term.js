@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useSearchParams} from "react-router-dom";
 import {Terminal} from "xterm";
 import {FitAddon} from "xterm-addon-fit";
@@ -40,6 +40,9 @@ const Term = () => {
     let [statsVisible, setStatsVisible] = useState(false);
     let [enterBtnZIndex, setEnterBtnZIndex] = useState(999);
     let [queryInterval, setQueryInterval] = useState(5000);
+    const websocketRef = useRef(null);
+    const termRef = useRef(null);
+    const pingIntervalRef = useRef(null);
 
     const createSession = async (assetsId) => {
         let result = await request.post(`/sessions?assetId=${assetsId}&mode=native`);
@@ -92,7 +95,7 @@ const Term = () => {
         setBox({width: window.innerWidth, height: window.innerHeight});
     };
 
-    const init = async (assetId) => {
+    const init = async (assetId, isCancelled) => {
         let term = new Terminal({
             fontFamily: 'monaco, Consolas, "Lucida Console", monospace',
             fontSize: 15,
@@ -101,11 +104,30 @@ const Term = () => {
             },
         });
         let elementTerm = document.getElementById('terminal');
+        if (!elementTerm) {
+            return;
+        }
         term.open(elementTerm);
         const fitAddon = new FitAddon();
         term.loadAddon(fitAddon);
         fitAddon.fit();
         term.focus();
+
+        const cleanupLocal = (webSocket, pingInterval) => {
+            if (pingInterval) {
+                clearInterval(pingInterval);
+            }
+            if (webSocket) {
+                webSocket.onopen = null;
+                webSocket.onclose = null;
+                webSocket.onerror = null;
+                webSocket.onmessage = null;
+                if (webSocket.readyState === WebSocket.OPEN || webSocket.readyState === WebSocket.CONNECTING) {
+                    webSocket.close();
+                }
+            }
+            term.dispose();
+        };
 
         if (!assetId) {
             writeErrorMessage(term, `参数缺失，请关闭此页面后重新打开。`)
@@ -113,6 +135,10 @@ const Term = () => {
         }
 
         let [session, errMsg] = await createSession(assetId);
+        if (isCancelled && isCancelled()) {
+            term.dispose();
+            return;
+        }
         if (!session) {
             writeErrorMessage(term, `创建会话失败，${errMsg}`)
             return;
@@ -155,9 +181,14 @@ const Term = () => {
 
         let pingInterval;
         webSocket.onopen = (e => {
+            if (isCancelled && isCancelled()) {
+                cleanupLocal(webSocket, null);
+                return;
+            }
             pingInterval = setInterval(() => {
                 webSocket.send(new Message(Message.Ping, "").toString());
             }, 10000);
+            pingIntervalRef.current = pingInterval;
             xtermScrollPretty();
         });
 
@@ -167,14 +198,21 @@ const Term = () => {
 
         webSocket.onclose = (e) => {
             console.log(`e`, e);
-            term.writeln("connection is closed.");
+            try {
+                term.writeln("connection is closed.");
+            } catch (err) {
+                // term may already be disposed
+            }
             if (pingInterval) {
                 clearInterval(pingInterval);
+            }
+            if (pingIntervalRef.current === pingInterval) {
+                pingIntervalRef.current = null;
             }
         }
 
         term.onData(data => {
-            if (webSocket !== undefined) {
+            if (webSocket !== undefined && webSocket.readyState === WebSocket.OPEN) {
                 webSocket.send(new Message(Message.Data, data).toString());
             }
         });
@@ -200,6 +238,13 @@ const Term = () => {
             }
         }
 
+        if (isCancelled && isCancelled()) {
+            cleanupLocal(webSocket, pingInterval);
+            return;
+        }
+
+        websocketRef.current = webSocket;
+        termRef.current = term;
         setSession(session);
         setTerm(term);
         setFitAddon(fitAddon);
@@ -214,7 +259,28 @@ const Term = () => {
 
     useEffect(() => {
         document.title = assetName;
-        init(assetId);
+        let cancelled = false;
+        init(assetId, () => cancelled);
+        return () => {
+            cancelled = true;
+            if (pingIntervalRef.current) {
+                clearInterval(pingIntervalRef.current);
+                pingIntervalRef.current = null;
+            }
+            if (websocketRef.current) {
+                const ws = websocketRef.current;
+                ws.onopen = null;
+                ws.onclose = null;
+                ws.onerror = null;
+                ws.onmessage = null;
+                ws.close();
+                websocketRef.current = null;
+            }
+            if (termRef.current) {
+                termRef.current.dispose();
+                termRef.current = null;
+            }
+        };
     }, [assetId]);
 
     useEffect(() => {
@@ -236,9 +302,6 @@ const Term = () => {
         window.addEventListener('resize', resize);
 
         return () => {
-            // if (websocket) {
-            //     websocket.close();
-            // }
             window.removeEventListener('resize', resize);
             window.removeEventListener('beforeunload', handleUnload);
         }

@@ -221,10 +221,21 @@ func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
 	return append(ciphertext, padText...)
 }
 
-func PKCS5UnPadding(origData []byte) []byte {
+func PKCS5UnPadding(origData []byte) ([]byte, error) {
 	length := len(origData)
+	if length == 0 {
+		return nil, errors.New("PKCS5 unpadding: empty data")
+	}
 	unPadding := int(origData[length-1])
-	return origData[:(length - unPadding)]
+	if unPadding <= 0 || unPadding > length || unPadding > aes.BlockSize {
+		return nil, errors.New("PKCS5 unpadding: invalid padding size")
+	}
+	for i := 0; i < unPadding; i++ {
+		if int(origData[length-1-i]) != unPadding {
+			return nil, errors.New("PKCS5 unpadding: invalid padding bytes")
+		}
+	}
+	return origData[:(length - unPadding)], nil
 }
 
 // AesEncryptCBC /*
@@ -249,11 +260,13 @@ func AesDecryptCBC(encrypted, key []byte) ([]byte, error) {
 	}
 
 	blockSize := block.BlockSize()
+	if len(encrypted) == 0 || len(encrypted)%blockSize != 0 {
+		return nil, errors.New("AES decrypt: invalid ciphertext length")
+	}
 	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
 	origData := make([]byte, len(encrypted))
 	blockMode.CryptBlocks(origData, encrypted)
-	origData = PKCS5UnPadding(origData)
-	return origData, nil
+	return PKCS5UnPadding(origData)
 }
 
 func Pbkdf2(password string) ([]byte, error) {

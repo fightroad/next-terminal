@@ -1,13 +1,17 @@
 package session
 
 import (
+	"sync"
+	"time"
+
 	"next-terminal/server/common/guacamole"
 	"next-terminal/server/common/term"
-	"sync"
+	"next-terminal/server/dto"
 
 	"github.com/gorilla/websocket"
-	"next-terminal/server/dto"
 )
+
+const writeWait = 10 * time.Second
 
 type Session struct {
 	ID           string
@@ -27,20 +31,24 @@ func (s *Session) WriteMessage(msg dto.Message) error {
 	if s.WebSocket == nil {
 		return nil
 	}
-	defer s.mutex.Unlock()
 	s.mutex.Lock()
-	message := []byte(msg.ToString())
-	return s.WebSocket.WriteMessage(websocket.TextMessage, message)
+	defer s.mutex.Unlock()
+	_ = s.WebSocket.SetWriteDeadline(time.Now().Add(writeWait))
+	err := s.WebSocket.WriteMessage(websocket.TextMessage, []byte(msg.ToString()))
+	_ = s.WebSocket.SetWriteDeadline(time.Time{})
+	return err
 }
 
 func (s *Session) WriteString(str string) error {
 	if s.WebSocket == nil {
 		return nil
 	}
-	defer s.mutex.Unlock()
 	s.mutex.Lock()
-	message := []byte(str)
-	return s.WebSocket.WriteMessage(websocket.TextMessage, message)
+	defer s.mutex.Unlock()
+	_ = s.WebSocket.SetWriteDeadline(time.Now().Add(writeWait))
+	err := s.WebSocket.WriteMessage(websocket.TextMessage, []byte(str))
+	_ = s.WebSocket.SetWriteDeadline(time.Time{})
+	return err
 }
 
 func (s *Session) Close() {

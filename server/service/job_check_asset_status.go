@@ -37,10 +37,10 @@ func (r CheckAssetStatusJob) Run() {
 		return
 	}
 
-	msgChan := make(chan string)
+	msgChan := make(chan string, len(assets))
 	for i := range assets {
 		asset := assets[i]
-		go func() {
+		go func(asset model.Asset) {
 			t1 := time.Now()
 			var (
 				msg  string
@@ -64,7 +64,7 @@ func (r CheckAssetStatusJob) Run() {
 			_ = repository.AssetRepository.UpdateActiveById(context.TODO(), active, message, asset.ID)
 			log.Debug(msg)
 			msgChan <- msg
-		}()
+		}(asset)
 	}
 
 	var message = ""

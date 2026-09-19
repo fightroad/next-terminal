@@ -2,6 +2,7 @@ package env
 
 import (
 	"fmt"
+	"time"
 
 	"next-terminal/server/config"
 	"next-terminal/server/model"
@@ -36,7 +37,7 @@ func setupDB() *gorm.DB {
 			Logger: logMode,
 		})
 	} else {
-		dsn := fmt.Sprintf("file:%s?cache=shared&mode=rwc", config.GlobalCfg.Sqlite.File)
+		dsn := fmt.Sprintf("file:%s?cache=shared&mode=rwc&_pragma=busy_timeout(5000)", config.GlobalCfg.Sqlite.File)
 		db, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{
 			Logger:                 logMode,
 			SkipDefaultTransaction: true,
@@ -45,6 +46,31 @@ func setupDB() *gorm.DB {
 
 	if err != nil {
 		panic(fmt.Errorf("连接数据库异常: %v", err.Error()))
+	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		panic(fmt.Errorf("获取数据库连接异常: %v", err.Error()))
+	}
+
+	if config.GlobalCfg.DB == "mysql" {
+		sqlDB.SetMaxOpenConns(25)
+		sqlDB.SetMaxIdleConns(10)
+		sqlDB.SetConnMaxLifetime(time.Hour)
+	} else {
+		// SQLite 写并发弱，单连接 + WAL 更稳
+		sqlDB.SetMaxOpenConns(1)
+		sqlDB.SetMaxIdleConns(1)
+		sqlDB.SetConnMaxLifetime(time.Hour)
+		if err := db.Exec("PRAGMA journal_mode=WAL").Error; err != nil {
+			panic(fmt.Errorf("设置 SQLite WAL 失败: %v", err.Error()))
+		}
+		if err := db.Exec("PRAGMA busy_timeout=5000").Error; err != nil {
+			panic(fmt.Errorf("设置 SQLite busy_timeout 失败: %v", err.Error()))
+		}
+		if err := db.Exec("PRAGMA foreign_keys=ON").Error; err != nil {
+			panic(fmt.Errorf("设置 SQLite foreign_keys 失败: %v", err.Error()))
+		}
 	}
 
 	if err := db.AutoMigrate(&model.User{}, &model.Asset{}, &model.AssetAttribute{}, &model.Session{}, &model.Command{},

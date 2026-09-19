@@ -59,12 +59,12 @@ func (r ShellJob) executeShellByAssets(assets []model.Asset) {
 		return
 	}
 
-	msgChan := make(chan string)
+	msgChan := make(chan string, len(assets))
 	for i := range assets {
 		asset, err := AssetService.FindByIdAndDecrypt(context.TODO(), assets[i].ID)
 		if err != nil {
 			msgChan <- fmt.Sprintf("资产「%v」Shell执行失败，查询数据异常「%v」", assets[i].Name, err.Error())
-			return
+			continue
 		}
 
 		var (
@@ -80,7 +80,7 @@ func (r ShellJob) executeShellByAssets(assets []model.Asset) {
 			credential, err := CredentialService.FindByIdAndDecrypt(context.TODO(), asset.CredentialId)
 			if err != nil {
 				msgChan <- fmt.Sprintf("资产「%v」Shell执行失败，查询授权凭证数据异常「%v」", assets[i].Name, err.Error())
-				return
+				continue
 			}
 
 			if credential.Type == nt.Custom {
@@ -93,7 +93,7 @@ func (r ShellJob) executeShellByAssets(assets []model.Asset) {
 			}
 		}
 
-		go func() {
+		go func(asset model.Asset, username, password, privateKey, passphrase, ip string, port int) {
 			t1 := time.Now()
 			result, err := execute(metadataShell.Shell, asset.AccessGatewayId, ip, port, username, password, privateKey, passphrase)
 			elapsed := time.Since(t1)
@@ -111,7 +111,7 @@ func (r ShellJob) executeShellByAssets(assets []model.Asset) {
 			}
 
 			msgChan <- msg
-		}()
+		}(asset, username, password, privateKey, passphrase, ip, port)
 	}
 
 	var message = ""

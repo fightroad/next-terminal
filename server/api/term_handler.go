@@ -129,9 +129,16 @@ func (r *TermHandler) SendMessageToWebSocket(msg dto.Message) error {
 
 func SendObData(sessionId, s string) {
 	nextSession := session.GlobalSessionManager.GetById(sessionId)
-	if nextSession != nil && nextSession.Observer != nil {
-		nextSession.Observer.Range(func(key string, ob *session.Session) {
-			_ = ob.WriteMessage(dto.NewMessage(Data, s))
-		})
+	if nextSession == nil || nextSession.Observer == nil {
+		return
+	}
+	var dead []string
+	nextSession.Observer.Range(func(key string, ob *session.Session) {
+		if err := ob.WriteMessage(dto.NewMessage(Data, s)); err != nil {
+			dead = append(dead, key)
+		}
+	})
+	for _, id := range dead {
+		nextSession.Observer.Del(id)
 	}
 }

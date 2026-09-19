@@ -177,6 +177,13 @@ const Guacd = () => {
             window.removeEventListener('resize', resize);
             window.removeEventListener('beforeunload', handleUnload);
             window.removeEventListener('focus', handleWindowFocus);
+            if (guacd && guacd.client) {
+                try {
+                    guacd.client.disconnect();
+                } catch (e) {
+                    // ignore disconnect errors on unmount
+                }
+            }
         };
     }, [guacd])
 

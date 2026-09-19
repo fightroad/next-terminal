@@ -70,7 +70,7 @@ func (r credentialRepository) DeleteById(c context.Context, id string) error {
 }
 
 func (r credentialRepository) Count(c context.Context) (total int64, err error) {
-	err = r.GetDB(c).Find(&model.Credential{}).Count(&total).Error
+	err = r.GetDB(c).Model(&model.Credential{}).Count(&total).Error
 	return
 }
 

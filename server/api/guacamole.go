@@ -267,7 +267,9 @@ func (api GuacamoleApi) GuacamoleMonitor(c echo.Context) error {
 		}
 		_, err = guacdTunnel.WriteAndFlush(message)
 		if err != nil {
-			service.SessionService.CloseSessionById(sessionId, TunnelClosed, "远程连接已关闭")
+			// 观察者隧道异常只移除监控端，不能关闭被监控的主会话
+			_ = guacdTunnel.Close()
+			forObsSession.Observer.Del(nextSession.ID)
 			return nil
 		}
 	}
