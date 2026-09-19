@@ -3,11 +3,9 @@ package api
 import (
 	"bytes"
 	"context"
-	"sync"
 	"time"
 	"unicode/utf8"
 
-	"github.com/gorilla/websocket"
 	"next-terminal/server/common/term"
 	"next-terminal/server/dto"
 	"next-terminal/server/global/session"
@@ -16,24 +14,23 @@ import (
 type TermHandler struct {
 	sessionId    string
 	isRecording  bool
-	webSocket    *websocket.Conn
+	sess         *session.Session
 	nextTerminal *term.NextTerminal
 	ctx          context.Context
 	cancel       context.CancelFunc
 	dataChan     chan rune
 	tick         *time.Ticker
-	mutex        sync.Mutex
 	buf          bytes.Buffer
 }
 
-func NewTermHandler(userId, assetId, sessionId string, isRecording bool, ws *websocket.Conn, nextTerminal *term.NextTerminal) *TermHandler {
+func NewTermHandler(userId, assetId, sessionId string, isRecording bool, sess *session.Session, nextTerminal *term.NextTerminal) *TermHandler {
 	ctx, cancel := context.WithCancel(context.Background())
 	tick := time.NewTicker(time.Millisecond * time.Duration(60))
 
 	return &TermHandler{
 		sessionId:    sessionId,
 		isRecording:  isRecording,
-		webSocket:    ws,
+		sess:         sess,
 		nextTerminal: nextTerminal,
 		ctx:          ctx,
 		cancel:       cancel,
@@ -123,13 +120,10 @@ func (r *TermHandler) SendRequest() error {
 }
 
 func (r *TermHandler) SendMessageToWebSocket(msg dto.Message) error {
-	if r.webSocket == nil {
+	if r.sess == nil {
 		return nil
 	}
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-	message := []byte(msg.ToString())
-	return r.webSocket.WriteMessage(websocket.TextMessage, message)
+	return r.sess.WriteMessage(msg)
 }
 
 func SendObData(sessionId, s string) {

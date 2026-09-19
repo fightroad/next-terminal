@@ -28,25 +28,22 @@ type Session struct {
 }
 
 func (s *Session) WriteMessage(msg dto.Message) error {
-	if s.WebSocket == nil {
-		return nil
-	}
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	_ = s.WebSocket.SetWriteDeadline(time.Now().Add(writeWait))
-	err := s.WebSocket.WriteMessage(websocket.TextMessage, []byte(msg.ToString()))
-	_ = s.WebSocket.SetWriteDeadline(time.Time{})
-	return err
+	return s.Write([]byte(msg.ToString()))
 }
 
 func (s *Session) WriteString(str string) error {
+	return s.Write([]byte(str))
+}
+
+// Write 串行化同一条 WebSocket 上的写操作。gorilla/websocket 不允许并发 WriteMessage。
+func (s *Session) Write(data []byte) error {
 	if s.WebSocket == nil {
 		return nil
 	}
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	_ = s.WebSocket.SetWriteDeadline(time.Now().Add(writeWait))
-	err := s.WebSocket.WriteMessage(websocket.TextMessage, []byte(str))
+	err := s.WebSocket.WriteMessage(websocket.TextMessage, data)
 	_ = s.WebSocket.SetWriteDeadline(time.Time{})
 	return err
 }

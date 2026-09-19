@@ -16,5 +16,5 @@ func (wc *WriteCounter) Write(p []byte) (n int, err error) {
 	data := fmt.Sprintf("%d㊥", wc.Total)
 	_, _ = wc.Resp.Write([]byte(data))
 	wc.Resp.Flush()
-	return n, nil
+	return len(p), nil
 }

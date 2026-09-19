@@ -152,7 +152,7 @@ func (api WebTerminalApi) SshEndpoint(c echo.Context) error {
 	}
 	session.GlobalSessionManager.Add(nextSession)
 
-	termHandler := NewTermHandler(s.Creator, s.AssetId, sessionId, isRecording, ws, nextTerminal)
+	termHandler := NewTermHandler(s.Creator, s.AssetId, sessionId, isRecording, nextSession, nextTerminal)
 	termHandler.Start()
 	defer termHandler.Stop()
 

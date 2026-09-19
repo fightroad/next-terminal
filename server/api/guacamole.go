@@ -158,7 +158,7 @@ func (api GuacamoleApi) Guacamole(c echo.Context) error {
 		return err
 	}
 
-	guacamoleHandler := NewGuacamoleHandler(ws, guacdTunnel)
+	guacamoleHandler := NewGuacamoleHandler(nextSession, guacdTunnel)
 	guacamoleHandler.Start()
 	defer guacamoleHandler.Stop()
 
@@ -254,7 +254,7 @@ func (api GuacamoleApi) GuacamoleMonitor(c echo.Context) error {
 	nextSession.ID = utils.UUID()
 	forObsSession.Observer.Add(nextSession)
 
-	guacamoleHandler := NewGuacamoleHandler(ws, guacdTunnel)
+	guacamoleHandler := NewGuacamoleHandler(nextSession, guacdTunnel)
 	guacamoleHandler.Start()
 	defer guacamoleHandler.Stop()
 
