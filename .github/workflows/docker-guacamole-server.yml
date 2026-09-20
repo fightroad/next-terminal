@@ -1,5 +1,7 @@
 name: Docker Guacamole Server Build
-  
+
+# 已不再需要：日常 guacd 镜像改为基于官方 guacamole/guacd:1.6.0（见 docker-guacd.yml）。
+# 本 workflow 仅作历史备用，如无特殊补丁需求请勿使用。
 on:
   workflow_dispatch:
 

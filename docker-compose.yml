@@ -3,7 +3,7 @@ version: '3.8'
 services:
   guacd:
     container_name: guacd
-    image: fightroad/guacd:latest
+    image: fightroad/guacd:1.6.0
     volumes:
       - /opt/docker/next-terminal/data:/usr/local/next-terminal/data
     restart: unless-stopped
