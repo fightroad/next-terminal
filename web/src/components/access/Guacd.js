@@ -524,7 +524,7 @@ const Guacd = () => {
             <Drawer
                 title={'文件管理'}
                 placement="right"
-                width={window.innerWidth * 0.8}
+                width={window.innerWidth * 0.5}
                 closable={true}
                 onClose={() => {
                     focus();

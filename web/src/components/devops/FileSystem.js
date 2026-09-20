@@ -15,6 +15,7 @@ import {
     Typography
 } from "antd";
 import {
+    ArrowUpOutlined,
     CloudUploadOutlined,
     DeleteOutlined,
     ExclamationCircleOutlined,
@@ -43,6 +44,49 @@ const MonacoEditor = lazy(() => import('react-monaco-editor'));
 
 const {Text} = Typography;
 const confirm = Modal.confirm;
+
+const TEXT_EXTENSIONS = new Set([
+    'txt', 'text', 'log', 'out', 'err', 'md', 'markdown', 'rst', 'adoc', 'csv', 'tsv',
+    'json', 'jsonc', 'xml', 'yaml', 'yml', 'toml', 'ini', 'conf', 'cfg', 'config', 'cnf', 'properties', 'prop', 'env',
+    'html', 'htm', 'css', 'scss', 'sass', 'less', 'js', 'jsx', 'mjs', 'cjs', 'ts', 'tsx', 'vue', 'php', 'phtml',
+    'py', 'pyw', 'rb', 'go', 'java', 'kt', 'kts', 'c', 'cc', 'cpp', 'cxx', 'h', 'hh', 'hpp', 'cs', 'rs', 'swift', 'sql',
+    'sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd', 'pl', 'pm', 'lua', 'r', 'scala', 'groovy', 'gradle',
+    'svg', 'gitignore', 'dockerignore', 'editorconfig', 'htaccess', 'nginx',
+    'service', 'socket', 'timer', 'target', 'mount', 'automount', 'path', 'swap', 'netdev', 'network', 'link', 'device', 'slice',
+    'pem', 'crt', 'key', 'pub', 'csr',
+    'tf', 'tfvars', 'hcl', 'sls', 'pp', 'mod', 'sum', 'lock',
+    'graphql', 'gql', 'proto', 'prisma',
+    'list', 'in', 'sample', 'example', 'dist', 'template', 'tmpl', 'tpl', 'repo', 'desktop'
+]);
+
+const BINARY_EXTENSIONS = new Set([
+    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'rtf', 'odt', 'ods', 'odp',
+    'bmp', 'jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff', 'pcx', 'tga', 'exif', 'psd', 'ai', 'webp', 'ico', 'icns', 'heic', 'heif',
+    'zip', 'gz', 'tgz', 'bz2', 'xz', '7z', 'rar', 'iso', 'tar',
+    'mp3', 'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'wav', 'ogg', 'webm', 'm4a', 'm4v',
+    'exe', 'dll', 'so', 'dylib', 'bin', 'o', 'a', 'class', 'jar', 'war', 'ear', 'deb', 'rpm', 'apk', 'dmg', 'msi',
+    'pyc', 'pyo', 'wasm', 'db', 'sqlite', 'sqlite3',
+    'ttf', 'otf', 'woff', 'woff2', 'eot'
+]);
+
+function isTextEditable(name) {
+    if (!name) {
+        return false;
+    }
+    const base = name.substring(name.lastIndexOf('/') + 1).toLowerCase();
+    if (base === '.env' || base.indexOf('.env.') === 0) {
+        return true;
+    }
+    const dot = base.lastIndexOf('.');
+    if (dot <= 0) {
+        return true;
+    }
+    const ext = base.substring(dot + 1);
+    if (BINARY_EXTENSIONS.has(ext)) {
+        return false;
+    }
+    return TEXT_EXTENSIONS.has(ext);
+}
 
 class FileSystem extends Component {
 
@@ -179,6 +223,18 @@ class FileSystem extends Component {
         this.loadFiles(event.target.value);
     }
 
+    handleGoParent = () => {
+        const currentDirectory = this.state.currentDirectory || '/';
+        if (currentDirectory === '/') {
+            return;
+        }
+        let parentDirectory = currentDirectory.substring(0, currentDirectory.lastIndexOf('/'));
+        if (isEmpty(parentDirectory)) {
+            parentDirectory = '/';
+        }
+        this.loadFiles(parentDirectory);
+    }
+
     handleUploadDir = () => {
         let files = window.document.getElementById('dir-upload').files;
         let uploadEndCount = 0;
@@ -211,6 +267,118 @@ class FileSystem extends Component {
             }
             this.uploadFile(file, this.state.currentDirectory, () => {
                 if (increaseUploadEndCount() === files.length) {
+                    this.refresh();
+                }
+            });
+        }
+    }
+
+    // 拖拽上传：文件传到当前目录；文件夹按相对路径建目录并上传，与「上传文件夹」一致
+    handleDragDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!this.state.upload) {
+            return;
+        }
+        const items = e.dataTransfer && e.dataTransfer.items;
+        const entries = [];
+        if (items) {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.kind !== 'file') {
+                    continue;
+                }
+                const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+                if (entry) {
+                    entries.push(entry);
+                }
+            }
+        }
+        if (entries.length > 0) {
+            this.uploadDroppedEntries(entries);
+            return;
+        }
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (!files || files.length === 0) {
+            return;
+        }
+        const tasks = [];
+        for (let i = 0; i < files.length; i++) {
+            tasks.push({file: files[i], dir: ''});
+        }
+        this.uploadDroppedFiles(tasks);
+    }
+
+    uploadDroppedEntries = async (entries) => {
+        try {
+            const tasks = [];
+            for (let i = 0; i < entries.length; i++) {
+                const part = await this.collectDropFiles(entries[i], '');
+                for (let j = 0; j < part.length; j++) {
+                    tasks.push(part[j]);
+                }
+            }
+            this.uploadDroppedFiles(tasks);
+        } catch (e) {
+            message.error('读取拖入的文件夹失败');
+        }
+    }
+
+    collectDropFiles = async (entry, relativeDir) => {
+        if (entry.isFile) {
+            const file = await new Promise((resolve, reject) => {
+                entry.file(resolve, reject);
+            });
+            return [{file, dir: relativeDir}];
+        }
+        if (!entry.isDirectory) {
+            return [];
+        }
+        const children = await this.readAllDirectoryEntries(entry.createReader());
+        const nextDir = relativeDir + entry.name + '/';
+        const tasks = [];
+        for (let i = 0; i < children.length; i++) {
+            const part = await this.collectDropFiles(children[i], nextDir);
+            for (let j = 0; j < part.length; j++) {
+                tasks.push(part[j]);
+            }
+        }
+        return tasks;
+    }
+
+    readAllDirectoryEntries = (reader) => {
+        return new Promise((resolve, reject) => {
+            const entries = [];
+            const readBatch = () => {
+                reader.readEntries((batch) => {
+                    if (!batch || batch.length === 0) {
+                        resolve(entries);
+                        return;
+                    }
+                    for (let i = 0; i < batch.length; i++) {
+                        entries.push(batch[i]);
+                    }
+                    readBatch();
+                }, reject);
+            };
+            readBatch();
+        });
+    }
+
+    uploadDroppedFiles = (tasks) => {
+        if (!tasks || tasks.length === 0) {
+            return;
+        }
+        let uploadEndCount = 0;
+        const increaseUploadEndCount = () => {
+            uploadEndCount++;
+            return uploadEndCount;
+        }
+        for (let i = 0; i < tasks.length; i++) {
+            const relativeDir = tasks[i].dir;
+            const dir = relativeDir ? this.state.currentDirectory + '/' + relativeDir : this.state.currentDirectory;
+            this.uploadFile(tasks[i].file, dir, () => {
+                if (increaseUploadEndCount() === tasks.length) {
                     this.refresh();
                 }
             });
@@ -367,6 +535,16 @@ class FileSystem extends Component {
         }
     }
 
+    canEditFile = (item) => {
+        if (!this.state.edit || !item) {
+            return false;
+        }
+        if (item['key'] === '..' || item['isDir'] || item['isLink']) {
+            return false;
+        }
+        return isTextEditable(item['name']);
+    }
+
     showEditor = async (name, key) => {
         message.loading({key: key, content: 'Loading'})
         let fileContent = await request.get(`${server}/${this.state.storageType}/${this.state.storageId}/download?file=${window.encodeURIComponent(key)}&t=${new Date().getTime()}`);
@@ -486,6 +664,7 @@ class FileSystem extends Component {
                 title: '大小',
                 dataIndex: 'size',
                 key: 'size',
+                width: 90,
                 render: (value, item) => {
                     if (!item['isDir'] && !item['isLink']) {
                         return <span className={'dode'}>{renderSize(value)}</span>;
@@ -506,6 +685,7 @@ class FileSystem extends Component {
                 title: '修改日期',
                 dataIndex: 'modTime',
                 key: 'modTime',
+                width: 170,
                 sorter: (a, b) => {
                     if (a['key'] === '..') {
                         return 0;
@@ -524,6 +704,7 @@ class FileSystem extends Component {
                 title: '属性',
                 dataIndex: 'mode',
                 key: 'mode',
+                width: 110,
                 render: (value, item) => {
                     return <span className={'dode'}>{value}</span>;
                 },
@@ -537,10 +718,9 @@ class FileSystem extends Component {
                         return undefined;
                     }
                     let disableDownload = !this.state.download;
-                    let disableEdit = !this.state.edit;
+                    let disableEdit = !this.canEditFile(item);
                     if (item['isDir'] || item['isLink']) {
                         disableDownload = true;
-                        disableEdit = true
                     }
                     return (
                         <>
@@ -602,6 +782,16 @@ class FileSystem extends Component {
                 </div>
                 <div className='fs-header-right'>
                     <Space>
+                        <div className='fs-header-right-item'>
+                            <Tooltip title="返回上一层">
+                                <Button type="primary" size="small"
+                                        icon={<ArrowUpOutlined/>}
+                                        disabled={this.state.currentDirectory === '/'}
+                                        onClick={this.handleGoParent}
+                                        ghost/>
+                            </Tooltip>
+                        </div>
+
                         <div className='fs-header-right-item'>
                             <Tooltip title="创建文件夹">
                                 <Button type="primary" size="small"
@@ -689,7 +879,11 @@ class FileSystem extends Component {
 
         return (
             <div>
-                <Card title={title} bordered={true} size="small" style={{minHeight: this.state.minHeight}}>
+                <Card title={title} bordered={true} size="small" style={{minHeight: this.state.minHeight}}
+                      onDragOver={(e) => {
+                          e.preventDefault();
+                      }}
+                      onDrop={this.handleDragDrop}>
 
                     <Table columns={columns}
                            rowSelection={rowSelection}
@@ -697,6 +891,8 @@ class FileSystem extends Component {
                            size={'small'}
                            pagination={false}
                            loading={this.state.loading}
+                           tableLayout="fixed"
+                           scroll={{x: 700}}
 
                            onRow={record => {
                                return {
@@ -710,8 +906,8 @@ class FileSystem extends Component {
                                            } else {
                                                this.loadFiles(record['path']);
                                            }
-                                       } else {
-
+                                       } else if (this.canEditFile(record)) {
+                                           this.showEditor(record['name'], record['key']);
                                        }
                                    },
                                };

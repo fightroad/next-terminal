@@ -361,7 +361,7 @@ const Term = () => {
             <Drawer
                 title={'会话详情'}
                 placement="right"
-                width={window.innerWidth * 0.8}
+                width={window.innerWidth * 0.5}
                 closable={true}
                 // maskClosable={false}
                 onClose={() => {
