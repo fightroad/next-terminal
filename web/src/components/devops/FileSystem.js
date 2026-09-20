@@ -45,28 +45,32 @@ const MonacoEditor = lazy(() => import('react-monaco-editor'));
 const {Text} = Typography;
 const confirm = Modal.confirm;
 
-const TEXT_EXTENSIONS = new Set([
-    'txt', 'text', 'log', 'out', 'err', 'md', 'markdown', 'rst', 'adoc', 'csv', 'tsv',
-    'json', 'jsonc', 'xml', 'yaml', 'yml', 'toml', 'ini', 'conf', 'cfg', 'config', 'cnf', 'properties', 'prop', 'env',
-    'html', 'htm', 'css', 'scss', 'sass', 'less', 'js', 'jsx', 'mjs', 'cjs', 'ts', 'tsx', 'vue', 'php', 'phtml',
-    'py', 'pyw', 'rb', 'go', 'java', 'kt', 'kts', 'c', 'cc', 'cpp', 'cxx', 'h', 'hh', 'hpp', 'cs', 'rs', 'swift', 'sql',
-    'sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd', 'pl', 'pm', 'lua', 'r', 'scala', 'groovy', 'gradle',
-    'svg', 'gitignore', 'dockerignore', 'editorconfig', 'htaccess', 'nginx',
-    'service', 'socket', 'timer', 'target', 'mount', 'automount', 'path', 'swap', 'netdev', 'network', 'link', 'device', 'slice',
-    'pem', 'crt', 'key', 'pub', 'csr',
-    'tf', 'tfvars', 'hcl', 'sls', 'pp', 'mod', 'sum', 'lock',
-    'graphql', 'gql', 'proto', 'prisma',
-    'list', 'in', 'sample', 'example', 'dist', 'template', 'tmpl', 'tpl', 'repo', 'desktop'
-]);
-
 const BINARY_EXTENSIONS = new Set([
+    // Office / 文档
     'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'rtf', 'odt', 'ods', 'odp',
-    'bmp', 'jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff', 'pcx', 'tga', 'exif', 'psd', 'ai', 'webp', 'ico', 'icns', 'heic', 'heif',
-    'zip', 'gz', 'tgz', 'bz2', 'xz', '7z', 'rar', 'iso', 'tar',
+    'epub', 'mobi', 'chm',
+    // 图片
+    'bmp', 'jpg', 'jpeg', 'png', 'gif', 'tif', 'tiff', 'pcx', 'tga', 'exif', 'psd', 'ai', 'webp',
+    'ico', 'icns', 'heic', 'heif', 'raw', 'cr2', 'nef', 'svgz',
+    // 压缩包 / 镜像
+    'zip', 'gz', 'tgz', 'bz2', 'xz', '7z', 'rar', 'iso', 'tar', 'cab', 'lz', 'lzma', 'zst',
+    'txz', 'tbz', 'tbz2', 'lz4', 'br', 'z', 'cpio', 'snap',
+    // 音视频
     'mp3', 'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'wav', 'ogg', 'webm', 'm4a', 'm4v',
-    'exe', 'dll', 'so', 'dylib', 'bin', 'o', 'a', 'class', 'jar', 'war', 'ear', 'deb', 'rpm', 'apk', 'dmg', 'msi',
-    'pyc', 'pyo', 'wasm', 'db', 'sqlite', 'sqlite3',
-    'ttf', 'otf', 'woff', 'woff2', 'eot'
+    'aac', 'flac', 'wma', 'opus', 'ape',
+    // 可执行 / 库 / 安装包
+    'exe', 'dll', 'so', 'dylib', 'bin', 'o', 'obj', 'a', 'lib', 'rlib', 'class', 'jar', 'war', 'ear',
+    'deb', 'rpm', 'apk', 'ipa', 'dmg', 'msi', 'pkg', 'ko', 'elf', 'dex', 'aab', 'appx', 'msix',
+    'whl', 'egg', 'gem', 'nupkg', 'vsix', 'crx', 'xpi',
+    // 字节码 / 数据库 / 字体
+    'pyc', 'pyo', 'pyd', 'wasm', 'db', 'sqlite', 'sqlite3', 'mdb', 'accdb',
+    'ttf', 'otf', 'woff', 'woff2', 'eot',
+    // 磁盘 / 虚拟机镜像
+    'img', 'vmdk', 'qcow', 'qcow2', 'vdi', 'vhd', 'vhdx', 'ova', 'vfd', 'hdd',
+    // 数据 / 模型 / 抓包 / 其它二进制
+    'pak', 'dat', 'blob', 'cache', 'pkl', 'pickle', 'npy', 'npz5', 'h5', 'parquet', 'orc', 'avro',
+    'pt', 'pth', 'pb', 'onnx', 'safetensors', 'gguf',
+    'pcap', 'pcapng', 'cap', 'dmp', 'dump', 'core', 'torrent', 'swf'
 ]);
 
 function isTextEditable(name) {
@@ -74,18 +78,11 @@ function isTextEditable(name) {
         return false;
     }
     const base = name.substring(name.lastIndexOf('/') + 1).toLowerCase();
-    if (base === '.env' || base.indexOf('.env.') === 0) {
-        return true;
-    }
     const dot = base.lastIndexOf('.');
     if (dot <= 0) {
         return true;
     }
-    const ext = base.substring(dot + 1);
-    if (BINARY_EXTENSIONS.has(ext)) {
-        return false;
-    }
-    return TEXT_EXTENSIONS.has(ext);
+    return !BINARY_EXTENSIONS.has(base.substring(dot + 1));
 }
 
 class FileSystem extends Component {

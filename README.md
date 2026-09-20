@@ -1,6 +1,6 @@
 # Next Terminal
 
-本仓库是 [Next Terminal](https://github.com/dushixiang/next-terminal) 1.x 开源版的分叉二次开发，当前版本 **1.4.12**。上游 1.x 已停止维护，本仓库在其基础上继续维护。协议仍为 AGPL-3.0。
+本仓库是 [Next Terminal](https://github.com/dushixiang/next-terminal) 1.x 开源版的分叉二次开发，当前版本 **1.4.13**。上游 1.x 已停止维护，本仓库在其基础上继续维护。协议仍为 AGPL-3.0。
 
 ## 快速了解
 
