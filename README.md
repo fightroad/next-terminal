@@ -1,49 +1,65 @@
 # Next Terminal
 
-本仓库是 [Next Terminal](https://github.com/dushixiang/next-terminal) 1.x 开源版的分叉二次开发，当前版本 **1.4.13**。上游 1.x 已停止维护，本仓库在其基础上继续维护。协议仍为 AGPL-3.0。
+本仓库是 [Next Terminal](https://github.com/dushixiang/next-terminal) 1.x 开源版的分叉二次开发，当前版本 **1.4.13**。上游 1.x 已停止维护，本仓库在其基础上继续维护：[fightroad/next-terminal](https://github.com/fightroad/next-terminal)。协议仍为 AGPL-3.0。
 
 ## 快速了解
 
 Next Terminal 是一个简单好用安全的开源交互审计系统，支持 RDP、SSH、VNC、Telnet、Kubernetes 协议。
 
+## 界面预览
+
+### 控制面板
+
+数据概览、资产类型分布与会话统计。
+
+![控制面板](./doc/控制面板.png)
+
+### 终端资产
+
+资产列表、协议筛选与一键连接。
+
+![终端资产](./doc/终端资产.png)
+
 ## 主要功能
 
 - 授权凭证管理
-- 资产管理（支持RDP、SSH、VNC、TELNET协议）
+- 资产管理（支持 RDP、SSH、VNC、Telnet、Kubernetes 协议）
 - 指令管理
 - 批量执行命令
 - 在线会话管理（监控、强制断开）
 - 离线会话管理（查看录屏）
 - 双因素认证
 - 资产标签与授权
-- 多用户&用户分组
+- 多用户 & 用户分组
 - 计划任务
 - SSH Server
 - 登录策略
 - 系统监控
 
-## 快速安装
-
-- [安装文档](https://next-terminal.typesafe.cn)（上游 1.x 文档，步骤仍可参考）
+## 快速开始
 
 部署请用本仓库根目录的 `docker-compose.yml`，镜像是 `fightroad/next-terminal` 和 `fightroad/guacd`，不要用上游镜像。
-
-默认账号密码为 `admin/admin`。
-
-## Docker Compose 部署
-
-使用项目根目录的 `docker-compose.yml` 文件快速部署：
 
 ```bash
 docker-compose up -d
 ```
 
+启动后访问：http://localhost:8088
+
+默认账号密码：`admin` / `admin`
+
+上游安装文档可作参考：[安装文档](https://next-terminal.typesafe.cn)
+
+## Docker Compose 部署
+
 ### 配置说明
 
 - **guacd 服务**：Guacamole 代理服务，用于处理远程连接
 - **next-terminal 服务**：主服务，Web 界面和 API
-  - 端口映射：`8088:8088`（可根据需要修改）
+  - 端口映射：`8088:8088`（Web 管理界面）
+  - 端口映射：`8089:8089`（SSH Server，可选）
   - 数据目录：`/opt/docker/next-terminal/data`（可根据需要修改）
+  - 日志目录：`/opt/docker/next-terminal/logs`（可根据需要修改）
   - 使用 SQLite 数据库（默认）
 - **网络**：自动创建 `next-terminal` 网络，两个服务在同一网络中
 
